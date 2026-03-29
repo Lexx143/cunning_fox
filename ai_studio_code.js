@@ -148,3 +148,15 @@ const suspects = [
 // Пример использования: Найти всех лис в очках
 const withGlasses = suspects.filter(fox => fox.glasses);
 console.log("Лисы в очках:", withGlasses.map(f => f.name));
+
+// 1. Функция для выбора случайного вора
+function pickSecretThief(allSuspects) {
+  const randomIndex = Math.floor(Math.random() * allSuspects.length);
+  return allSuspects[randomIndex];
+}
+
+// 2. Глобальная переменная, которую будет искать консоль и дешифратор
+const secretThief = pickSecretThief(suspects);
+
+// 3. Сообщение для проверки
+console.log("Игра началась! Вор выбран. Попробуйте угадать его приметы через дешифратор.");

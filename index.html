@@ -11,6 +11,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 20px;
         }
 
         #game-board {
@@ -19,35 +20,64 @@
             background: white;
             border-radius: 10px;
             margin-top: 20px;
+            width: 400px;
         }
 
-        .fox-list {
-            color: #555;
+        /* Стиль для блока дешифратора */
+        #decoder {
+            background: #fff3cd;
+            padding: 20px;
+            border: 2px solid #ffeeba;
+            border-radius: 10px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .fox-card {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            transition: 0.2s;
         }
     </style>
 </head>
 
 <body>
     <h1>Коварный Лис: Цифровая версия</h1>
+
+    <div id="decoder">
+        <h3>🔍 Дешифратор улик</h3>
+        <select id="clue-select" style="padding: 10px; margin-bottom: 10px; width: 80%;">
+            <option value="hat">Шляпа 🎩</option>
+            <option value="glasses">Очки 👓</option>
+            <option value="scarf">Шарф 🧣</option>
+            <option value="umbrella">Зонтик ☂️</option>
+            <option value="monocle">Монокль 🧐</option>
+            <option value="watch">Часы ⌚</option>
+        </select>
+        <br>
+        <button onclick="checkClue()" style="padding: 10px 20px; cursor: pointer;">Проверить улику</button>
+        <p id="result-text" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;"></p>
+    </div>
+
     <div id="game-board">
-        <p>Подозреваемые загружены. Проверьте консоль браузера (F12).</p>
-        <div id="fox-names" class="fox-list"></div>
+        <p>Нажимайте на лис, чтобы вычеркнуть их:</p>
+        <div id="fox-names"></div>
     </div>
 
     <script src="ai_studio_code.js"></script>
 
     <script>
-        // Код, который выведет имена лис на страницу
-       const listDiv = document.getElementById('fox-names');
+        const listDiv = document.getElementById('fox-names');
 
+        // Вывод карточек (с добавленной функцией клика)
         suspects.forEach(fox => {
             const card = document.createElement('div');
-            card.style.border = "1px solid #ddd";
-            card.style.margin = "5px";
-            card.style.padding = "10px";
-            card.style.borderRadius = "5px";
+            card.className = 'fox-card';
 
-            // Создаем строку со всеми приметами
             const attributes = [
                 fox.hat ? "🎩" : "",
                 fox.glasses ? "👓" : "",
@@ -55,11 +85,33 @@
                 fox.umbrella ? "☂️" : "",
                 fox.monocle ? "🧐" : "",
                 fox.watch ? "⌚" : ""
-            ].filter(icon => icon !== "").join(" "); // Убираем пустые и соединяем иконки
+            ].filter(icon => icon !== "").join(" ");
 
             card.innerHTML = `<strong>🦊 ${fox.name}</strong> <br> <small>Приметы: ${attributes || "нет"}</small>`;
+
+            // Механика вычеркивания
+            card.onclick = function () {
+                card.style.opacity = card.style.opacity === "0.3" ? "1" : "0.3";
+                card.style.background = card.style.opacity === "0.3" ? "#eee" : "white";
+            };
+
             listDiv.appendChild(card);
         });
+
+        // НОВОЕ: Функция проверки улики
+        function checkClue() {
+            const selectedClue = document.getElementById('clue-select').value;
+            const resultDisplay = document.getElementById('result-text');
+
+            // Переменная secretThief берется из файла ai_studio_code.js
+            if (secretThief[selectedClue]) {
+                resultDisplay.textContent = "✅ Зеленый! У вора есть это.";
+                resultDisplay.style.color = "green";
+            } else {
+                resultDisplay.textContent = "⚪ Белый! У вора этого нет.";
+                resultDisplay.style.color = "gray";
+            }
+        }
     </script>
 </body>
 
