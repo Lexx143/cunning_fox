@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Коварный Лис - Детектив</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-board {
+            border: 2px solid #333;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .fox-list {
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Коварный Лис: Цифровая версия</h1>
+    <div id="game-board">
+        <p>Подозреваемые загружены. Проверьте консоль браузера (F12).</p>
+        <div id="fox-names" class="fox-list"></div>
+    </div>
+
+    <script src="ai_studio_code.js"></script>
+
+    <script>
+        // Код, который выведет имена лис на страницу
+        const listDiv = document.getElementById('fox-names');
+        suspects.forEach(fox => {
+            const p = document.createElement('p');
+            p.textContent = `🦊 ${fox.name} (В шляпе: ${fox.hat ? 'Да' : 'Нет'})`;
+            listDiv.appendChild(p);
+        });
+    </script>
+</body>
+
+</html>
