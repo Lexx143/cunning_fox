@@ -38,11 +38,27 @@
 
     <script>
         // Код, который выведет имена лис на страницу
-        const listDiv = document.getElementById('fox-names');
+       const listDiv = document.getElementById('fox-names');
+
         suspects.forEach(fox => {
-            const p = document.createElement('p');
-            p.textContent = `🦊 ${fox.name} (В шляпе: ${fox.hat ? 'Да' : 'Нет'})`;
-            listDiv.appendChild(p);
+            const card = document.createElement('div');
+            card.style.border = "1px solid #ddd";
+            card.style.margin = "5px";
+            card.style.padding = "10px";
+            card.style.borderRadius = "5px";
+
+            // Создаем строку со всеми приметами
+            const attributes = [
+                fox.hat ? "🎩" : "",
+                fox.glasses ? "👓" : "",
+                fox.scarf ? "🧣" : "",
+                fox.umbrella ? "☂️" : "",
+                fox.monocle ? "🧐" : "",
+                fox.watch ? "⌚" : ""
+            ].filter(icon => icon !== "").join(" "); // Убираем пустые и соединяем иконки
+
+            card.innerHTML = `<strong>🦊 ${fox.name}</strong> <br> <small>Приметы: ${attributes || "нет"}</small>`;
+            listDiv.appendChild(card);
         });
     </script>
 </body>
