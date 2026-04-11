@@ -41,16 +41,7 @@
             background-color: #e69900;
         }
 
-        .fox-track-container {
-            width: 100%;
-            max-width: 900px;
-            margin: 20px 0;
-            text-align: center;
-            background: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            border: 2px solid #333;
-        }
+        
 
         #fox-track {
             display: flex;
@@ -71,112 +62,121 @@
             border-radius: 4px;
         }
 
-        .main-content {
+        
+        .top-hud {
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
             justify-content: center;
-            flex-wrap: wrap;
-            max-width: 1000px;
+            align-items: stretch;
+            gap: 30px;
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto 30px auto;
         }
-
-        .left-panel, .right-panel {
+        .hud-side {
+            width: 350px;
             display: flex;
             flex-direction: column;
+            margin-top: 100px;
+        }
+        .hud-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .hud-center h1 { margin-top: 0; margin-bottom: 10px; font-size: 2.5em; }
+        .hud-center .btn-new-game { margin-bottom: 20px; }
+        .game-info-block {
+            background: #fff; border: 2px solid #555; border-radius: 8px; padding: 15px 30px;
+            font-size: 1.1em; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .info-row { display: flex; justify-content: center; gap: 10px; font-weight: bold; }
+
+        .game-table {
+            display: grid;
+            grid-template-areas:
+                ". top-edge ."
+                "left-edge center-board right-edge"
+                ". bottom-edge .";
+            grid-template-columns: 140px auto 140px;
+            grid-template-rows: auto auto auto;
             gap: 20px;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        .suspect-edge {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .edge-top { grid-area: top-edge; flex-direction: row; }
+        .edge-bottom { grid-area: bottom-edge; flex-direction: row; }
+        .edge-left { grid-area: left-edge; flex-direction: column; }
+        .edge-right { grid-area: right-edge; flex-direction: column; }
+        
+        #corner-top-left { grid-area: top-left; align-items:center;}
+        #corner-top-right { grid-area: top-right; align-items:center;}
+        #center-board { 
+            grid-area: center-board; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
         }
 
         /* Кубики */
-        .dice-section {
+        .dice-section, #decoder {
             background: white;
             padding: 20px;
             border: 2px solid #333;
             border-radius: 10px;
-            width: 400px;
             text-align: center;
+            box-sizing: border-box;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-
         .dice-container {
             display: flex;
             gap: 15px;
             justify-content: center;
             margin: 15px 0;
         }
-
         .die {
-            width: 50px;
-            height: 50px;
-            background: #fff;
-            border: 2px solid #555;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
+            width: 50px; height: 50px; background: #fff; border: 2px solid #555;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;
         }
+        .die.locked { border-color: #28a745; background: #d4edda; }
+        
+        .btn { padding: 10px 15px; cursor: pointer; border: 1px solid #555; border-radius: 5px; background: #eee; }
+        .btn:hover:not(:disabled) { background: #ddd; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .die.locked {
-            border-color: #28a745;
-            background: #d4edda;
-        }
-
-        .btn {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: 1px solid #555;
-            border-radius: 5px;
-            background: #eee;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: #ddd;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Подозреваемые */
-        .clickable-suspect {
-            cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-        .clickable-suspect:hover {
-            background-color: #d6d8db !important;
-            border-color: #007bff;
-        }
-
-        #suspects-board {
-            background: white;
-            padding: 20px;
-            border: 2px solid #333;
-            border-radius: 10px;
-            width: 400px;
-        }
-
-        #fox-names {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            max-height: 450px;
-            overflow-y: auto;
-        }
+        .clickable-suspect { cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+        .clickable-suspect:hover { background-color: #d6d8db !important; border-color: #007bff; }
 
         .fox-card {
             border: 1px solid #ddd;
             padding: 10px;
             border-radius: 5px;
             background: white;
-            width: calc(50% - 5px);
+            width: 130px;
+            min-height: 160px;
             box-sizing: border-box;
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            font-size: 0.85em;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }
-
-        .accuse-btn {
+.accuse-btn {
             margin-top: 10px;
             padding: 5px;
             background: #dc3545;
@@ -211,12 +211,10 @@
         /* Дешифратор */
         #decoder {
             background: #fff3cd;
-            padding: 20px;
-            border: 2px solid #ffeeba;
-            border-radius: 10px;
-            text-align: center;
-            width: 400px;
+            border-color: #f6c23e;
+            width: 100%;
         }
+        .dice-section { width: 100%; }
 
         select {
             padding: 8px;
@@ -235,12 +233,12 @@
 
         #board-grid {
             display: grid;
-            grid-template-columns: repeat(16, 23px);
-            grid-template-rows: repeat(16, 23px);
+            grid-template-columns: repeat(16, 40px);
+            grid-template-rows: repeat(16, 40px);
             gap: 1px;
             background-color: #bfa888;
             border: 2px solid #8a735c;
-            margin: 0 auto;
+            margin: 20px auto;
         }
 
         .board-cell {
@@ -248,7 +246,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 14px;
+            font-size: 18px;
             cursor: pointer;
             user-select: none;
             transition: background-color 0.1s;
@@ -261,23 +259,26 @@
 </head>
 
 <body>
-    <div class="header">
-        <h1>Коварный Лис</h1>
-        <button class="btn-new-game" onclick="startNewGame()">Новое дело</button>
+    <div class="header-hud" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1300px; margin: 0 auto;">
+        <h1 style="margin-top: 0; margin-bottom: 20px; font-size: 2.5em;">Хитрый Лис</h1>
+        <button class="btn-new-game" onclick="startNewGame()" style="margin-bottom: 20px;">Новое дело</button>
+        <div class="game-info-block" style="margin-bottom: 20px; width: 100%; max-width: 644px; background: #fff; border: 2px solid #555; border-radius: 8px; padding: 15px 30px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+            <div class="info-row" style="display: flex; justify-content: center; align-items: center; gap: 20px; font-weight: bold;">
+                <span style="font-size: 1.1em;">Осталось бросков: <span id="rolls-left" style="color: #ffaa00; font-size:1.2em;">3</span></span>
+                <div style="height: 20px; border-left: 2px solid #ccc;"></div>
+                <span style="font-size: 1.1em;">Шагов сыщика: <span id="steps-left-display" style="color: blue; font-size:1.2em;">0</span></span>
+            </div>
+            <div style="margin-top: 5px; border-top: 1px solid #ddd; padding-top: 10px; text-align: center; font-weight: bold; font-size: 1.1em;">
+                <span id="action-status" style="color: blue;"></span>
+            </div>
+        </div>
     </div>
-
-    <!-- Трек лиса -->
-    <div class="fox-track-container">
-        <h3>Путь Лиса к норе:</h3>
-        <div id="fox-track"></div>
-    </div>
-
-    <div class="main-content">
-        <!-- Левая часть -->
-        <div class="left-panel">
-            <div class="dice-section">
-                <h3>Бросок кубиков</h3>
-                <div style="margin-bottom: 15px;">
+<!-- Игровой стол (CSS Grid) -->
+    <div class="game-table">
+        <div style="grid-area: top-edge; position: relative; display: flex; justify-content: center; width: 100%;">
+            <div class="dice-section" style="position: absolute; right: 100%; bottom: 0; margin-right: 20px; width: 330px; height: 320px; z-index:10; background: white; padding: 20px; border: 2px solid #333; border-radius: 10px; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <h3 style="margin-top:0;">Бросок кубиков</h3>
+                <div style="margin-bottom: 20px;">
                     <label style="display:inline-flex; align-items:center;">
                         <input type="radio" name="dice-target" value="eyes" checked style="margin-right:5px;"> Глаза 👁️
                     </label>
@@ -287,30 +288,17 @@
                         <svg width="18" height="18" style="margin-left: 4px;" viewBox="0 0 24 24" fill="#333"><path d="M 5,16 Q 12,23.5 19,16 Z"/><circle cx="12" cy="13" r="3.3"/><circle cx="8" cy="15" r="3.3"/><circle cx="16" cy="15" r="3.3"/><ellipse cx="4.5" cy="8" rx="2.2" ry="3.5" transform="rotate(-26 4.5 8)"/><ellipse cx="9.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(-15 9.5 5.7)"/><ellipse cx="14.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(15 14.5 5.7)"/><ellipse cx="19.5" cy="8" rx="2.2" ry="3.5" transform="rotate(26 19.5 8)"/></svg>
                     </label>
                 </div>
-                
-                <p>Осталось бросков: <span id="rolls-left">3</span></p>
-                <button class="btn" id="roll-btn" onclick="rollDice()">Бросить кубики</button>
-                
-                <div class="dice-container">
-                    <div class="die" id="die-0">❓</div>
-                    <div class="die" id="die-1">❓</div>
-                    <div class="die" id="die-2">❓</div>
+                <button class="btn" id="roll-btn" onclick="rollDice()" style="width: 80%; padding: 15px; font-size: 1.1em; margin-bottom: 15px; cursor: pointer; border: 1px solid #555; border-radius: 5px; background: #eee;">Бросить кубики</button>
+                <div class="dice-container" style="display: flex; gap: 15px; justify-content: center; margin: 0;">
+                    <div class="die" id="die-0" style="width: 50px; height: 50px; background: #fff; border: 2px solid #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">❓</div>
+                    <div class="die" id="die-1" style="width: 50px; height: 50px; background: #fff; border: 2px solid #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">❓</div>
+                    <div class="die" id="die-2" style="width: 50px; height: 50px; background: #fff; border: 2px solid #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px;">❓</div>
                 </div>
-                
-                <p id="action-status" style="font-weight: bold; color: blue; min-height: 20px;"></p>
             </div>
-
-            <div id="suspects-board">
-                <h3>Подозреваемые</h3>
-                <div id="fox-names"></div>
-            </div>
-        </div>
-
-        <!-- Правая часть -->
-        <div class="right-panel">
-            <div id="decoder">
-                <h3>🔍 Дешифратор улик</h3>
-                <select id="clue-select">
+            
+            <div id="decoder" style="position: absolute; left: 100%; bottom: 0; margin-left: 20px; width: 330px; height: 320px; z-index:10; background: #fff3cd; border: 2px solid #f6c23e; padding: 20px; border-radius: 10px; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <h3 style="margin-top:0;">🔍 Дешифратор улик</h3>
+                <select id="clue-select" style="width: 80%; margin-bottom: 15px; padding: 8px; font-size: 16px;">
                     <option value="hat">Шляпа 🎩</option>
                     <option value="glasses">Очки 👓</option>
                     <option value="scarf">Шарф 🧣</option>
@@ -318,21 +306,27 @@
                     <option value="monocle">Монокль 🧐</option>
                     <option value="watch">Часы ⌚</option>
                 </select>
-                <br><br>
-                <button id="check-clue-btn" class="btn" onclick="checkClue()" disabled>Проверить улику</button>
-                <p id="result-text" style="margin-top: 15px; font-weight: bold; font-size: 1.2em; min-height: 24px;"></p>
-                <div id="checked-clues-container" style="margin-top: 20px; border-top: 1px solid #ffeeba; padding-top: 10px;">
-                    <h4 style="margin: 0 0 10px 0;">Проверенные улики:</h4>
-                    <div id="checked-clues-list"></div>
+                <div style="flex:1;">
+                    <button id="check-clue-btn" class="btn" onclick="checkClue()" disabled style="width: 80%; padding: 10px; font-size: 1em; cursor: pointer; border: 1px solid #555; border-radius: 5px; background: #eee;">Проверить улику</button>
+                    <p id="result-text" style="margin-top: 10px; font-weight: bold; font-size: 1.1em; min-height: 24px;"></p>
+                </div>
+                <div id="checked-clues-container" style="margin-top: 10px; border-top: 1px solid #ffeeba; padding-top: 10px; width: 100%;">
+                    <h4 style="margin: 0 0 10px 0; font-size:0.9em;">Проверенные улики:</h4>
+                    <div id="checked-clues-list" style="font-size:0.9em; max-height: 80px; overflow-y: auto;"></div>
                 </div>
             </div>
 
-            <div id="board-container">
-                <h3>🗺️ Игровое поле</h3>
-                <p style="font-weight: bold;">Шагов сыщика: <span id="steps-left-display" style="color: blue;">0</span></p>
-                <div id="board-grid"></div>
-            </div>
+            <div id="edge-top" class="suspect-edge edge-top"></div>
         </div>
+
+        <div id="edge-left" class="suspect-edge edge-left"></div>
+
+        <div id="center-board">
+            <div id="board-grid"></div>
+        </div>
+
+        <div id="edge-right" class="suspect-edge edge-right"></div>
+        <div id="edge-bottom" class="suspect-edge edge-bottom"></div>
     </div>
 
     <script src="ai_studio_code.js"></script>
@@ -341,7 +335,7 @@
         // ================= Глобальные переменные и состояния =================
         let playerPos = { x: 7, y: 7 }; // 0-indexed
         const gridSize = 16;
-        const numClues = 12;
+        const numClues = 6;
         let cluesPos = [];
 
         let foxPosition = 0; // 0 to 16
@@ -353,6 +347,12 @@
         let lockedDice = [false, false, false];
         let rollsLeft = 3;
         let activeTarget = null; // 'eyes' | 'clues'
+        let lastDiceTarget = 'eyes';
+        const FOX_PATH = [
+            {x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 0}, {x: 6, y: 0}, {x: 7, y: 0},
+            {x: 8, y: 0}, {x: 9, y: 0}, {x: 10, y: 0}, {x: 11, y: 0}, {x: 12, y: 0}, {x: 13, y: 0}, {x: 14, y: 0}, {x: 15, y: 0},
+            {x: 15, y: 1} // Нора
+        ];
 
         const PAW_SVG = '<svg width="20" height="20" style="margin: 0 2px;" viewBox="0 0 24 24" fill="#333"><path d="M 5,16 Q 12,23.5 19,16 Z"/><circle cx="12" cy="13" r="3.3"/><circle cx="8" cy="15" r="3.3"/><circle cx="16" cy="15" r="3.3"/><ellipse cx="4.5" cy="8" rx="2.2" ry="3.5" transform="rotate(-26 4.5 8)"/><ellipse cx="9.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(-15 9.5 5.7)"/><ellipse cx="14.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(15 14.5 5.7)"/><ellipse cx="19.5" cy="8" rx="2.2" ry="3.5" transform="rotate(26 19.5 8)"/></svg>';
 
@@ -397,7 +397,6 @@
             selectOptions.forEach(opt => opt.disabled = false);
             document.getElementById('clue-select').selectedIndex = 0;
 
-            initFoxTrack();
             initBoard();
             renderSuspects();
 
@@ -420,43 +419,25 @@
         }
 
         // ================= Логика трека лиса и подозреваемых =================
-        function initFoxTrack() {
-            const track = document.getElementById('fox-track');
-            track.innerHTML = '';
-            for(let i=0; i<=16; i++) {
-                let cell = document.createElement('div');
-                cell.className = 'track-cell';
-                cell.id = 'track-cell-' + i;
-                if(i === 16) cell.style.background = '#ffdddd'; // Нора
-                track.appendChild(cell);
-            }
-            updateFoxTrackUI();
-        }
-
-        function updateFoxTrackUI() {
-            for(let i=0; i<=16; i++) {
-                let el = document.getElementById('track-cell-' + i);
-                if(el){
-                    el.textContent = (i === foxPosition) ? '🦊' : '';
-                }
-            }
-        }
-
         function moveFox(steps) {
             foxPosition += steps;
             if (foxPosition >= 16) {
                 foxPosition = 16;
-                initFoxTrack();
-                let thiefName = secretThief ? secretThief.name : 'Неизвестный';
+                    let thiefName = secretThief ? secretThief.name : 'Неизвестный';
                 endGame(false, `Лис скрылся в норе. Вы проиграли! 🦊🕳️<br>Настоящий вор: <b>${thiefName}</b>`);
             } else {
-                updateFoxTrackUI();
+                updateBoardDisplay();
             }
         }
 
         function renderSuspects() {
-            const listDiv = document.getElementById('fox-names');
-            listDiv.innerHTML = '';
+            const containers = [
+                document.getElementById('edge-top'),
+                document.getElementById('edge-right'),
+                document.getElementById('edge-bottom'),
+                document.getElementById('edge-left')
+            ];
+            containers.forEach(c => c.innerHTML = '');
             
             suspects.forEach((fox, index) => {
                 const card = document.createElement('div');
@@ -504,7 +485,11 @@
                         card.appendChild(btnContainer);
                     }
                 }
-                listDiv.appendChild(card);
+                // Distribute into 4 edges: 0-3 top, 4-7 right, 8-11 bottom, 12-15 left
+                const containerIndex = Math.floor(index / 4);
+                if (containers[containerIndex]) {
+                    containers[containerIndex].appendChild(card);
+                }
             });
         }
 
@@ -567,13 +552,18 @@
             document.getElementById('roll-btn').disabled = false;
             const radios = document.getElementsByName('dice-target');
             let hiddenCount = suspects.filter(f => !f.isRevealed).length;
+            
+            if (hiddenCount === 0 && lastDiceTarget === 'eyes') {
+                lastDiceTarget = 'clues';
+            }
+
             for (let r of radios) {
                 if (r.value === 'eyes' && hiddenCount === 0) {
                     r.disabled = true;
                 } else {
                     r.disabled = false;
                 }
-                r.checked = false;
+                r.checked = (r.value === lastDiceTarget);
             }
             
             document.getElementById('action-status').textContent = 'Новый ход. Выберите цель и бросайте.';
@@ -607,7 +597,10 @@
             if (activeTarget === null) {
                 const radios = document.getElementsByName('dice-target');
                 for (let r of radios) {
-                    if (r.checked) activeTarget = r.value;
+                    if (r.checked) {
+                        activeTarget = r.value;
+                        lastDiceTarget = r.value;
+                    }
                     r.disabled = true;
                 }
             }
@@ -664,6 +657,9 @@
                     moveFox(3);
                     if (gamePhase !== 'gameover') setTimeout(endTurn, 1000);
                 }, 1000);
+            } else {
+                document.getElementById('action-status').textContent = `Нужно 3 совпадения! Бросайте еще (осталось: ${rollsLeft}).`;
+                document.getElementById('action-status').style.color = '#ff9900';
             }
         }
 
@@ -726,12 +722,26 @@
                 const cx = parseInt(cell.dataset.x);
                 const cy = parseInt(cell.dataset.y);
                 
+                let content = '';
+                
+                if (cluesPos.some(c => c.x === cx && c.y === cy)) {
+                    content += '<svg width="18" height="18" viewBox="0 0 24 24" fill="#8a735c"><path d="M 5,16 Q 12,23.5 19,16 Z"/><circle cx="12" cy="13" r="3.3"/><circle cx="8" cy="15" r="3.3"/><circle cx="16" cy="15" r="3.3"/><ellipse cx="4.5" cy="8" rx="2.2" ry="3.5" transform="rotate(-26 4.5 8)"/><ellipse cx="9.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(-15 9.5 5.7)"/><ellipse cx="14.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(15 14.5 5.7)"/><ellipse cx="19.5" cy="8" rx="2.2" ry="3.5" transform="rotate(26 19.5 8)"/></svg>';
+                }
+                
+                if (cx === FOX_PATH[foxPosition].x && cy === FOX_PATH[foxPosition].y) {
+                    content += '🦊';
+                } else if (cx === FOX_PATH[16].x && cy === FOX_PATH[16].y) {
+                    content += '🕳️';
+                }
+                
                 if (cx === playerPos.x && cy === playerPos.y) {
-                    cell.innerHTML = '🕵️';
-                } else if (cluesPos.some(c => c.x === cx && c.y === cy)) {
-                    cell.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#8a735c"><path d="M 5,16 Q 12,23.5 19,16 Z"/><circle cx="12" cy="13" r="3.3"/><circle cx="8" cy="15" r="3.3"/><circle cx="16" cy="15" r="3.3"/><ellipse cx="4.5" cy="8" rx="2.2" ry="3.5" transform="rotate(-26 4.5 8)"/><ellipse cx="9.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(-15 9.5 5.7)"/><ellipse cx="14.5" cy="5.7" rx="2.2" ry="3.5" transform="rotate(15 14.5 5.7)"/><ellipse cx="19.5" cy="8" rx="2.2" ry="3.5" transform="rotate(26 19.5 8)"/></svg>';
+                    content += '🕵️';
+                }
+                
+                if (content.length > 2) {
+                     cell.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; flex-wrap:wrap; font-size:14px;">${content}</div>`;
                 } else {
-                    cell.innerHTML = '';
+                     cell.innerHTML = content;
                 }
             });
         }
