@@ -288,6 +288,10 @@
                 <br><br>
                 <button id="check-clue-btn" class="btn" onclick="checkClue()" disabled>Проверить улику</button>
                 <p id="result-text" style="margin-top: 15px; font-weight: bold; font-size: 1.2em; min-height: 24px;"></p>
+                <div id="checked-clues-container" style="margin-top: 20px; border-top: 1px solid #ffeeba; padding-top: 10px;">
+                    <h4 style="margin: 0 0 10px 0;">Проверенные улики:</h4>
+                    <div id="checked-clues-list"></div>
+                </div>
             </div>
 
             <div id="board-container">
@@ -350,6 +354,12 @@
             document.getElementById('result-text').textContent = '';
             document.getElementById('check-clue-btn').disabled = true;
             window.activeClueIndex = -1;
+            
+            // Сброс улик в Дешифраторе
+            document.getElementById('checked-clues-list').innerHTML = '';
+            const selectOptions = document.querySelectorAll('#clue-select option');
+            selectOptions.forEach(opt => opt.disabled = false);
+            document.getElementById('clue-select').selectedIndex = 0;
 
             gamePhase = 'rolling'; // Force state briefly so endTurn works well
             endTurn();
@@ -632,15 +642,38 @@
         }
 
         function checkClue() {
-            const selectedClue = document.getElementById('clue-select').value;
+            const selectEl = document.getElementById('clue-select');
+            const selectedClue = selectEl.value;
             const resultDisplay = document.getElementById('result-text');
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
 
-            if (secretThief[selectedClue]) {
+            const hasClue = secretThief[selectedClue];
+
+            if (hasClue) {
                 resultDisplay.textContent = "✅ Зеленый! У вора есть это.";
                 resultDisplay.style.color = "green";
             } else {
                 resultDisplay.textContent = "⚪ Белый! У вора этого нет.";
                 resultDisplay.style.color = "gray";
+            }
+
+            // Добавляем в список проверенных улик
+            const checkedCluesList = document.getElementById('checked-clues-list');
+            const listItem = document.createElement('div');
+            listItem.style.textAlign = 'left';
+            listItem.style.margin = '5px 0';
+            listItem.innerHTML = hasClue ? `✅ <b>${selectedOption.text}</b> (есть)` : `❌ <b>${selectedOption.text}</b> (нет)`;
+            checkedCluesList.appendChild(listItem);
+
+            // Блокируем опцию от повторного выбора
+            selectedOption.disabled = true;
+            
+            // Переключаем на следующую доступную опцию
+            for(let i=0; i<selectEl.options.length; i++) {
+                if(!selectEl.options[i].disabled) {
+                    selectEl.selectedIndex = i;
+                    break;
+                }
             }
 
             if (window.activeClueIndex !== undefined && window.activeClueIndex !== -1) {
