@@ -152,21 +152,12 @@ function startNewGameLogic() {
   // Скрываем всех подозреваемых
   suspects.forEach(fox => {
     fox.isRevealed = false;
+    fox.isReleased = false;
   });
 
   // Выбираем нового вора
   const randomIndex = Math.floor(Math.random() * suspects.length);
   secretThief = suspects[randomIndex];
-
-  // Открываем две случайные карточки подозреваемых
-  let revealedCount = 0;
-  while (revealedCount < 2) {
-    let rIdx = Math.floor(Math.random() * suspects.length);
-    if (!suspects[rIdx].isRevealed) {
-      suspects[rIdx].isRevealed = true;
-      revealedCount++;
-    }
-  }
 
   console.log("Новая игра началась! Вор выбран. Попробуйте вычислить его!");
 }
