@@ -145,18 +145,31 @@ const suspects = [
   }
 ];
 
-// Пример использования: Найти всех лис в очках
-const withGlasses = suspects.filter(fox => fox.glasses);
-console.log("Лисы в очках:", withGlasses.map(f => f.name));
+// Функция для выбора случайного вора и скрытия/открытия лис
+let secretThief = null;
 
-// 1. Функция для выбора случайного вора
-function pickSecretThief(allSuspects) {
-  const randomIndex = Math.floor(Math.random() * allSuspects.length);
-  return allSuspects[randomIndex];
+function startNewGameLogic() {
+  // Скрываем всех подозреваемых
+  suspects.forEach(fox => {
+    fox.isRevealed = false;
+  });
+
+  // Выбираем нового вора
+  const randomIndex = Math.floor(Math.random() * suspects.length);
+  secretThief = suspects[randomIndex];
+
+  // Открываем две случайные карточки подозреваемых
+  let revealedCount = 0;
+  while (revealedCount < 2) {
+    let rIdx = Math.floor(Math.random() * suspects.length);
+    if (!suspects[rIdx].isRevealed) {
+      suspects[rIdx].isRevealed = true;
+      revealedCount++;
+    }
+  }
+
+  console.log("Новая игра началась! Вор выбран. Попробуйте вычислить его!");
 }
 
-// 2. Глобальная переменная, которую будет искать консоль и дешифратор
-const secretThief = pickSecretThief(suspects);
-
-// 3. Сообщение для проверки
-console.log("Игра началась! Вор выбран. Попробуйте угадать его приметы через дешифратор.");
+// Запускаем инициализацию при первой загрузке скрипта
+startNewGameLogic();

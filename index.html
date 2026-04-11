@@ -14,16 +14,174 @@
             padding: 20px;
         }
 
-        #game-board {
-            border: 2px solid #333;
-            padding: 20px;
-            background: white;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .btn-new-game {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ffaa00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-new-game:hover {
+            background-color: #e69900;
+        }
+
+        .fox-track-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px 0;
+            text-align: center;
+            background: #fff;
+            padding: 10px;
             border-radius: 10px;
-            margin-top: 20px;
+            border: 2px solid #333;
+        }
+
+        #fox-track {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 5px;
+        }
+
+        .track-cell {
+            flex: 1;
+            height: 30px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1000px;
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Кубики */
+        .dice-section {
+            background: white;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .die {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: 2px solid #555;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .die.locked {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #eee;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #ddd;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Подозреваемые */
+        #suspects-board {
+            background: white;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
             width: 400px;
         }
 
-        /* Стиль для блока дешифратора */
+        #fox-names {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .fox-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background: white;
+            width: calc(50% - 5px);
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .accuse-btn {
+            margin-top: 10px;
+            padding: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .accuse-btn:hover {
+            background: #c82333;
+        }
+
+        /* Дешифратор */
         #decoder {
             background: #fff3cd;
             padding: 20px;
@@ -33,77 +191,450 @@
             width: 400px;
         }
 
-        .fox-card {
-            border: 1px solid #ddd;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
+        select {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        /* Игровое поле */
+        #board-container {
+            border: 2px solid #333;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            text-align: center;
+            width: 400px;
+        }
+
+        #board-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 23px);
+            grid-template-rows: repeat(16, 23px);
+            gap: 1px;
+            background-color: #bfa888;
+            border: 2px solid #8a735c;
+            margin: 0 auto;
+        }
+
+        .board-cell {
+            background-color: #fdf5e6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
             cursor: pointer;
-            background: white;
-            transition: 0.2s;
+            user-select: none;
+            transition: background-color 0.1s;
+        }
+
+        .board-cell:hover {
+            background-color: #ebd4b9;
         }
     </style>
 </head>
 
 <body>
-    <h1>Коварный Лис: Цифровая версия</h1>
-
-    <div id="decoder">
-        <h3>🔍 Дешифратор улик</h3>
-        <select id="clue-select" style="padding: 10px; margin-bottom: 10px; width: 80%;">
-            <option value="hat">Шляпа 🎩</option>
-            <option value="glasses">Очки 👓</option>
-            <option value="scarf">Шарф 🧣</option>
-            <option value="umbrella">Зонтик ☂️</option>
-            <option value="monocle">Монокль 🧐</option>
-            <option value="watch">Часы ⌚</option>
-        </select>
-        <br>
-        <button onclick="checkClue()" style="padding: 10px 20px; cursor: pointer;">Проверить улику</button>
-        <p id="result-text" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;"></p>
+    <div class="header">
+        <h1>Коварный Лис</h1>
+        <button class="btn-new-game" onclick="startNewGame()">Новое дело</button>
     </div>
 
-    <div id="game-board">
-        <p>Нажимайте на лис, чтобы вычеркнуть их:</p>
-        <div id="fox-names"></div>
+    <!-- Трек лиса -->
+    <div class="fox-track-container">
+        <h3>Путь Лиса к норе:</h3>
+        <div id="fox-track"></div>
+    </div>
+
+    <div class="main-content">
+        <!-- Левая часть -->
+        <div class="left-panel">
+            <div class="dice-section">
+                <h3>Бросок кубиков</h3>
+                <div style="margin-bottom: 15px;">
+                    <label><input type="radio" name="dice-target" value="eyes" checked> Глаза 👁️</label>
+                    <label style="margin-left: 20px;"><input type="radio" name="dice-target" value="clues"> Следы 🐾</label>
+                </div>
+                
+                <p>Осталось бросков: <span id="rolls-left">3</span></p>
+                <button class="btn" id="roll-btn" onclick="rollDice()">Бросить кубики</button>
+                
+                <div class="dice-container">
+                    <div class="die" id="die-0">❓</div>
+                    <div class="die" id="die-1">❓</div>
+                    <div class="die" id="die-2">❓</div>
+                </div>
+                
+                <p id="action-status" style="font-weight: bold; color: blue; min-height: 20px;"></p>
+            </div>
+
+            <div id="suspects-board">
+                <h3>Подозреваемые</h3>
+                <div id="fox-names"></div>
+            </div>
+        </div>
+
+        <!-- Правая часть -->
+        <div class="right-panel">
+            <div id="decoder">
+                <h3>🔍 Дешифратор улик</h3>
+                <select id="clue-select">
+                    <option value="hat">Шляпа 🎩</option>
+                    <option value="glasses">Очки 👓</option>
+                    <option value="scarf">Шарф 🧣</option>
+                    <option value="umbrella">Зонтик ☂️</option>
+                    <option value="monocle">Монокль 🧐</option>
+                    <option value="watch">Часы ⌚</option>
+                </select>
+                <br><br>
+                <button id="check-clue-btn" class="btn" onclick="checkClue()" disabled>Проверить улику</button>
+                <p id="result-text" style="margin-top: 15px; font-weight: bold; font-size: 1.2em; min-height: 24px;"></p>
+            </div>
+
+            <div id="board-container">
+                <h3>🗺️ Игровое поле</h3>
+                <p style="font-weight: bold;">Шагов сыщика: <span id="steps-left-display" style="color: blue;">0</span></p>
+                <div id="board-grid"></div>
+            </div>
+        </div>
     </div>
 
     <script src="ai_studio_code.js"></script>
 
     <script>
-        const listDiv = document.getElementById('fox-names');
+        // ================= Глобальные переменные и состояния =================
+        let playerPos = { x: 7, y: 7 }; // 0-indexed
+        const gridSize = 16;
+        const numClues = 12;
+        let cluesPos = [];
 
-        // Вывод карточек (с добавленной функцией клика)
-        suspects.forEach(fox => {
-            const card = document.createElement('div');
-            card.className = 'fox-card';
+        let foxPosition = 0; // 0 to 16
+        let gamePhase = 'rolling'; // 'rolling', 'moving', 'gameover'
+        let remainingSteps = 0;
+        
+        let diceState = [null, null, null];
+        let lockedDice = [false, false, false];
+        let rollsLeft = 3;
+        let activeTarget = null; // 'eyes' | 'clues'
 
-            const attributes = [
-                fox.hat ? "🎩" : "",
-                fox.glasses ? "👓" : "",
-                fox.scarf ? "🧣" : "",
-                fox.umbrella ? "☂️" : "",
-                fox.monocle ? "🧐" : "",
-                fox.watch ? "⌚" : ""
-            ].filter(icon => icon !== "").join(" ");
+        const DICE_FACES = [
+            { type: 'eyes', symbol: '👁️', steps: 0 },
+            { type: 'eyes', symbol: '👁️', steps: 0 },
+            { type: 'eyes', symbol: '👁️', steps: 0 },
+            { type: 'clues', symbol: '🐾', steps: 1 },
+            { type: 'clues', symbol: '🐾', steps: 1 },
+            { type: 'clues', symbol: '🐾🐾', steps: 2 }
+        ];
 
-            card.innerHTML = `<strong>🦊 ${fox.name}</strong> <br> <small>Приметы: ${attributes || "нет"}</small>`;
+        // ================= Инициализация игры =================
+        function startNewGame() {
+            // из ai_studio_code.js
+            if(typeof startNewGameLogic === 'function') {
+                startNewGameLogic();
+            }
 
-            // Механика вычеркивания
-            card.onclick = function () {
-                card.style.opacity = card.style.opacity === "0.3" ? "1" : "0.3";
-                card.style.background = card.style.opacity === "0.3" ? "#eee" : "white";
-            };
+            // Сброс позиций
+            foxPosition = 0;
+            playerPos = { x: 7, y: 7 };
+            
+            // Сброс улик
+            cluesPos = [];
+            while (cluesPos.length < numClues) {
+                let rx = Math.floor(Math.random() * gridSize);
+                let ry = Math.floor(Math.random() * gridSize);
+                if (!isCentralArea(rx, ry) && !cluesPos.some(c => c.x === rx && c.y === ry)) {
+                    cluesPos.push({x: rx, y: ry});
+                }
+            }
 
-            listDiv.appendChild(card);
-        });
+            // UI
+            document.getElementById('result-text').textContent = '';
+            document.getElementById('check-clue-btn').disabled = true;
+            window.activeClueIndex = -1;
 
-        // НОВОЕ: Функция проверки улики
+            gamePhase = 'rolling'; // Force state briefly so endTurn works well
+            endTurn();
+
+            initFoxTrack();
+            initBoard();
+            renderSuspects();
+
+            document.getElementById('action-status').textContent = 'Игра началась! Выберите цель и бросайте кубики.';
+            document.getElementById('action-status').style.color = 'blue';
+        }
+
+        // ================= Логика трека лиса и подозреваемых =================
+        function initFoxTrack() {
+            const track = document.getElementById('fox-track');
+            track.innerHTML = '';
+            for(let i=0; i<=16; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'track-cell';
+                cell.id = 'track-cell-' + i;
+                if(i === 16) cell.style.background = '#ffdddd'; // Нора
+                track.appendChild(cell);
+            }
+            updateFoxTrackUI();
+        }
+
+        function updateFoxTrackUI() {
+            for(let i=0; i<=16; i++) {
+                let el = document.getElementById('track-cell-' + i);
+                if(el){
+                    el.textContent = (i === foxPosition) ? '🦊' : '';
+                }
+            }
+        }
+
+        function moveFox(steps) {
+            if (gamePhase === 'gameover') return;
+            foxPosition += steps;
+            if (foxPosition >= 16) {
+                foxPosition = 16;
+                endGame(false, "Поражение! Лис добрался до своей норы! 😭");
+            }
+            updateFoxTrackUI();
+        }
+
+        function renderSuspects() {
+            const listDiv = document.getElementById('fox-names');
+            listDiv.innerHTML = '';
+            
+            suspects.forEach(fox => {
+                const card = document.createElement('div');
+                card.className = 'fox-card';
+                
+                if (!fox.isRevealed) {
+                    card.innerHTML = `<strong>❓ Неизвестный<br>подозреваемый</strong>`;
+                    card.style.background = '#e9ecef';
+                } else {
+                    const attributes = [
+                        fox.hat ? "🎩" : "",
+                        fox.glasses ? "👓" : "",
+                        fox.scarf ? "🧣" : "",
+                        fox.umbrella ? "☂️" : "",
+                        fox.monocle ? "🧐" : "",
+                        fox.watch ? "⌚" : ""
+                    ].filter(icon => icon !== "").join(" ");
+
+                    card.innerHTML = `<strong>🦊 ${fox.name}</strong><br><small>Приметы:<br>${attributes || "нет"}</small>`;
+                    
+                    const accuseBtn = document.createElement('button');
+                    accuseBtn.className = 'accuse-btn';
+                    accuseBtn.textContent = 'Обвинить!';
+                    accuseBtn.onclick = () => accuse(fox);
+                    card.appendChild(accuseBtn);
+                }
+                listDiv.appendChild(card);
+            });
+        }
+
+        function accuse(fox) {
+            if (gamePhase === 'gameover') return;
+            
+            if (secretThief && fox.name === secretThief.name) {
+                endGame(true, `Победа! Вы поймали вора: ${fox.name}! 🎉`);
+            } else {
+                alert(`Ошибка! ${fox.name} не вор. Лис ускоряется к норе!`);
+                moveFox(5);
+            }
+        }
+
+        function endGame(isWin, msg) {
+            gamePhase = 'gameover';
+            document.getElementById('action-status').textContent = msg;
+            document.getElementById('action-status').style.color = isWin ? 'green' : 'red';
+            document.getElementById('roll-btn').disabled = true;
+            document.getElementById('check-clue-btn').disabled = true;
+        }
+
+        // ================= Логика кубиков =================
+        function endTurn() {
+            if (gamePhase === 'gameover') return;
+            
+            gamePhase = 'rolling';
+            rollsLeft = 3;
+            activeTarget = null;
+            diceState = [null, null, null];
+            lockedDice = [false, false, false];
+            remainingSteps = 0;
+            
+            document.getElementById('rolls-left').textContent = rollsLeft;
+            document.getElementById('steps-left-display').textContent = remainingSteps;
+            document.getElementById('roll-btn').disabled = false;
+            
+            const radios = document.getElementsByName('dice-target');
+            for (let r of radios) r.disabled = false;
+            
+            document.getElementById('action-status').textContent = 'Новый ход. Выберите цель и бросайте кубики.';
+            document.getElementById('action-status').style.color = 'blue';
+
+            for(let i=0; i<3; i++) {
+                let el = document.getElementById('die-'+i);
+                el.textContent = '❓';
+                el.classList.remove('locked');
+            }
+        }
+
+        function updateDiceUI() {
+            for (let i = 0; i < 3; i++) {
+                let el = document.getElementById('die-' + i);
+                if (diceState[i]) {
+                    el.textContent = diceState[i].symbol;
+                }
+                if (lockedDice[i]) {
+                    el.classList.add('locked');
+                } else {
+                    el.classList.remove('locked');
+                }
+            }
+        }
+
+        function rollDice() {
+            if (gamePhase !== 'rolling' || rollsLeft <= 0) return;
+
+            // Фиксируем цель при первом броске
+            if (activeTarget === null) {
+                const radios = document.getElementsByName('dice-target');
+                for (let r of radios) {
+                    if (r.checked) activeTarget = r.value;
+                    r.disabled = true;
+                }
+            }
+
+            rollsLeft--;
+            document.getElementById('rolls-left').textContent = rollsLeft;
+
+            // Бросаем кубики
+            for (let i = 0; i < 3; i++) {
+                if (!lockedDice[i]) {
+                    const randFace = DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
+                    diceState[i] = Object.assign({}, randFace);
+                    
+                    if (activeTarget === randFace.type) {
+                        lockedDice[i] = true;
+                    }
+                }
+            }
+            updateDiceUI();
+
+            // Проверка успеха
+            const matchingCount = diceState.filter(d => d && d.type === activeTarget).length;
+            
+            if (matchingCount === 3) {
+                document.getElementById('action-status').textContent = 'Успех! ' + (activeTarget === 'eyes' ? 'Открыто 2 карты.' : 'Можно ходить!');
+                document.getElementById('action-status').style.color = 'green';
+                gamePhase = 'action';
+                document.getElementById('roll-btn').disabled = true;
+                
+                setTimeout(() => {
+                    if (gamePhase === 'gameover') return;
+                    if (activeTarget === 'eyes') {
+                        revealCards(2);
+                        setTimeout(endTurn, 1500);
+                    } else {
+                        remainingSteps = diceState.reduce((sum, d) => sum + d.steps, 0);
+                        document.getElementById('steps-left-display').textContent = remainingSteps;
+                        gamePhase = 'moving';
+                    }
+                }, 500);
+
+            } else if (rollsLeft === 0) {
+                document.getElementById('action-status').textContent = 'Провал! Лис идет на 3 шага.';
+                document.getElementById('action-status').style.color = 'red';
+                gamePhase = 'action';
+                document.getElementById('roll-btn').disabled = true;
+                
+                setTimeout(() => {
+                    if (gamePhase === 'gameover') return;
+                    moveFox(3);
+                    if (gamePhase !== 'gameover') setTimeout(endTurn, 1000);
+                }, 1000);
+            }
+        }
+
+        function revealCards(count) {
+            let hidden = suspects.filter(f => !f.isRevealed);
+            let revealedCount = 0;
+            while(revealedCount < count && hidden.length > 0) {
+                let randIndex = Math.floor(Math.random() * hidden.length);
+                hidden[randIndex].isRevealed = true;
+                hidden.splice(randIndex, 1);
+                revealedCount++;
+            }
+            renderSuspects();
+        }
+
+        // ================= Игровое поле и Дешифратор =================
+        function isCentralArea(x, y) {
+            return x >= 6 && x <= 9 && y >= 6 && y <= 9;
+        }
+
+        function initBoard() {
+            const board = document.getElementById('board-grid');
+            board.innerHTML = '';
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'board-cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    cell.onclick = () => handleCellClick(x, y);
+                    board.appendChild(cell);
+                }
+            }
+            updateBoardDisplay();
+        }
+
+        function handleCellClick(x, y) {
+            if (gamePhase !== 'moving' || remainingSteps <= 0) return;
+
+            const dx = Math.abs(x - playerPos.x);
+            const dy = Math.abs(y - playerPos.y);
+            
+            if (dx <= 1 && dy <= 1 && !(dx === 0 && dy === 0)) {
+                playerPos = { x, y };
+                remainingSteps--;
+                document.getElementById('steps-left-display').textContent = remainingSteps;
+                
+                const hasClueIndex = cluesPos.findIndex(c => c.x === x && c.y === y);
+                if (hasClueIndex !== -1) {
+                    document.getElementById('check-clue-btn').disabled = false;
+                    window.activeClueIndex = hasClueIndex;
+                } else {
+                    document.getElementById('check-clue-btn').disabled = true;
+                    window.activeClueIndex = -1;
+                    
+                    if (remainingSteps === 0) {
+                        setTimeout(() => {
+                            if(gamePhase !== 'gameover') endTurn();
+                        }, 500);
+                    }
+                }
+                updateBoardDisplay();
+            }
+        }
+
+        function updateBoardDisplay() {
+            const cells = document.querySelectorAll('.board-cell');
+            cells.forEach(cell => {
+                const cx = parseInt(cell.dataset.x);
+                const cy = parseInt(cell.dataset.y);
+                
+                if (cx === playerPos.x && cy === playerPos.y) {
+                    cell.textContent = '🕵️';
+                } else if (cluesPos.some(c => c.x === cx && c.y === cy)) {
+                    cell.textContent = '🐾';
+                } else {
+                    cell.textContent = '';
+                }
+            });
+        }
+
         function checkClue() {
             const selectedClue = document.getElementById('clue-select').value;
             const resultDisplay = document.getElementById('result-text');
 
-            // Переменная secretThief берется из файла ai_studio_code.js
             if (secretThief[selectedClue]) {
                 resultDisplay.textContent = "✅ Зеленый! У вора есть это.";
                 resultDisplay.style.color = "green";
@@ -111,8 +642,24 @@
                 resultDisplay.textContent = "⚪ Белый! У вора этого нет.";
                 resultDisplay.style.color = "gray";
             }
+
+            if (window.activeClueIndex !== undefined && window.activeClueIndex !== -1) {
+                cluesPos.splice(window.activeClueIndex, 1);
+                window.activeClueIndex = -1;
+            }
+            
+            document.getElementById('check-clue-btn').disabled = true;
+            updateBoardDisplay();
+            
+            if (remainingSteps === 0 && gamePhase === 'moving') {
+                setTimeout(endTurn, 1500);
+            }
         }
+
+        // ================= Первый запуск =================
+        window.addEventListener('DOMContentLoaded', () => {
+            startNewGame();
+        });
     </script>
 </body>
-
 </html>
