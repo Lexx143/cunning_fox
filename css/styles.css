@@ -1,0 +1,776 @@
+/* ================= Дизайн-токены ================= */
+:root {
+    --bg-1: #f7e8cf;
+    --bg-2: #eed7ae;
+    --panel: #fffaf0;
+    --panel-2: #fdf3df;
+    --art-bg: #fcf2d5; /* фон сгенерированных иллюстраций */
+    --ink: #4a3226;
+    --ink-soft: #7a5c44;
+    --accent: #e8863a;
+    --accent-dark: #c96f2a;
+    --green: #4f9d5d;
+    --green-soft: #e2f2e5;
+    --red: #d9534f;
+    --amber: #e6a817;
+    --grass-line: #96ab6d;
+    --grass-a: #dce6b2;
+    --grass-b: #d4dfa8;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 14px rgba(74, 50, 38, 0.18);
+    --shadow-sm: 0 2px 6px rgba(74, 50, 38, 0.14);
+    --font: 'Nunito', 'Trebuchet MS', 'Segoe UI Rounded', 'Comic Sans MS', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--ink);
+    background-color: var(--bg-1);
+    background-image: url('../assets/tex-page-bg.png');
+    background-size: 480px;
+    min-height: 100vh;
+    padding-bottom: 92px; /* место под панель действий */
+}
+
+.hidden { display: none !important; }
+
+svg { vertical-align: middle; }
+
+/* ================= Кнопки ================= */
+.btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    color: #fff;
+    background: var(--ink-soft);
+    min-height: 44px;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: linear-gradient(180deg, var(--accent), var(--accent-dark)); }
+.btn-secondary { background: #a98f77; }
+.btn-accent { background: linear-gradient(180deg, #f0b429, #d99a12); }
+.btn-danger { background: linear-gradient(180deg, #e05d59, #c74440); }
+@media (hover: hover) {
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); filter: brightness(1.05); }
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+/* ================= Шапка ================= */
+.header {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 14px 16px 6px;
+}
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.game-title {
+    margin: 0;
+    font-size: clamp(1.4rem, 4vw, 2.1rem);
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.title-icon { display: inline-flex; filter: drop-shadow(0 2px 2px rgba(74, 50, 38, 0.25)); }
+
+/* Индикатор опасности: сколько лису до норы */
+.fox-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 2.5px solid var(--green);
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.3s, background 0.3s;
+}
+.fox-danger .fox-danger-icon { display: inline-flex; }
+.fox-danger b { font-size: 1.15em; }
+.fox-danger.level-safe { border-color: var(--green); }
+.fox-danger.level-warn { border-color: var(--amber); background: #fdf4dd; }
+.fox-danger.level-danger {
+    border-color: var(--red);
+    background: #fbe9e8;
+    animation: danger-pulse 1.2s ease-in-out infinite;
+}
+@keyframes danger-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); }
+    50% { box-shadow: 0 0 0 5px rgba(217, 83, 79, 0.3); }
+}
+
+/* Чипы улик */
+.clue-chips {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.clue-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 2px solid rgba(74, 50, 38, 0.15);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    box-shadow: var(--shadow-sm);
+}
+.clue-chip .chip-mark { font-size: 0.85em; min-width: 0.9em; text-align: center; }
+.clue-chip.chip-yes { border-color: var(--green); background: var(--green-soft); color: #2f6b3b; }
+.clue-chip.chip-no { border-color: #c9b8a4; background: #f1ece4; color: #9a8873; }
+.clue-chip.chip-no svg,
+.clue-chip.chip-no img { filter: grayscale(1); opacity: 0.55; }
+
+/* ================= Игровой стол ================= */
+.game-table {
+    display: grid;
+    grid-template-areas:
+        ". top ."
+        "left board right"
+        ". bottom .";
+    grid-template-columns: auto minmax(0, auto) auto;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px 20px;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+.suspect-edge { display: flex; gap: 10px; justify-content: center; }
+.edge-top { grid-area: top; }
+.edge-bottom { grid-area: bottom; }
+.edge-left { grid-area: left; flex-direction: column; }
+.edge-right { grid-area: right; flex-direction: column; }
+
+/* Поле-лужайка */
+.board-wrap {
+    grid-area: board;
+    position: relative;
+    width: min(92vw, 780px);
+    margin: 0 auto;
+}
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(16, 1fr);
+    width: 100%;
+    aspect-ratio: 1;
+    background: #dbe6ab url('../assets/tex-grass.png') center / 560px repeat;
+    border: 4px solid #7d915a;
+    border-radius: 12px;
+    box-shadow: var(--shadow), inset 0 0 30px rgba(90, 110, 50, 0.12);
+    overflow: hidden;
+}
+.board-cell {
+    position: relative;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(105, 125, 55, 0.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.board-cell.grass-b { background: rgba(120, 150, 60, 0.06); }
+.board-cell.cell-clearing { background: rgba(240, 228, 160, 0.35); }
+.board-cell.cell-clearing.grass-b { background: rgba(235, 220, 150, 0.45); }
+
+/* Тропа лиса */
+.board-cell.cell-path,
+.board-cell.cell-path.grass-b,
+.board-cell.cell-burrow,
+.board-cell.cell-burrow.grass-b {
+    background: url('../assets/tex-path.png') center / 110px repeat;
+    box-shadow: inset 0 0 0 1px rgba(130, 100, 50, 0.22);
+}
+.board-cell.cell-path.path-passed::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(90, 65, 35, 0.18);
+    pointer-events: none;
+}
+
+/* Арты в клетках */
+.cell-art { display: inline-flex; width: 100%; height: 100%; align-items: center; justify-content: center; pointer-events: none; }
+.cell-art img { width: 78%; height: 78%; object-fit: contain; }
+.cell-art.art-clue img { width: 90%; height: 90%; filter: drop-shadow(0 1px 1px rgba(74, 50, 38, 0.3)); }
+.cell-art.art-burrow img { width: 116%; height: 116%; }
+.cell-art.art-decor img { opacity: 0.97; }
+
+.board-cell.reachable { cursor: pointer; }
+.board-cell.reachable::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 2px var(--accent);
+    animation: cell-pulse 1.2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes cell-pulse {
+    0%, 100% { background: rgba(255, 190, 110, 0.3); }
+    50% { background: rgba(255, 170, 80, 0.5); }
+}
+@media (hover: hover) {
+    .board-cell.reachable:hover::after { background: rgba(255, 160, 60, 0.55); animation: none; }
+}
+
+/* Фишки сыщиков */
+.pawn-layer { position: absolute; inset: 0; pointer-events: none; }
+.pawn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    border: 3px solid;
+    background: var(--art-bg);
+    box-shadow: 0 2px 5px rgba(74, 50, 38, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    z-index: 5;
+}
+
+/* Кроп головы детектива из полноростовой иллюстрации */
+.head-crop {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.head-crop img {
+    position: absolute;
+    width: 185%;
+    height: 185%;
+    left: -42.5%;
+    top: -6%;
+    object-fit: cover;
+}
+.pawn.active-pawn { z-index: 6; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85), 0 2px 6px rgba(74, 50, 38, 0.5); }
+
+/* Лис с пирогом на тропе */
+.fox-token {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 3px 3px rgba(74, 50, 38, 0.35));
+    z-index: 4;
+}
+.fox-token img { width: 100%; height: 100%; object-fit: contain; }
+.fox-token.in-burrow { opacity: 0; transform: scale(0.4); transition: transform 0.6s, opacity 0.6s; }
+.fox-danger-icon img { vertical-align: middle; }
+
+/* ================= Карты подозреваемых ================= */
+.fox-card {
+    width: 122px;
+    height: 168px;
+    perspective: 700px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+}
+.fox-card.revealed .card-inner { transform: rotateY(180deg); }
+.card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 6px;
+    overflow: hidden;
+}
+.card-back {
+    background: url('../assets/tile-mystery.png') center / cover no-repeat;
+    border: 3px solid #a05a24;
+}
+.card-front {
+    transform: rotateY(180deg);
+    background: var(--art-bg);
+    border: 3px solid #e3cba4;
+    gap: 3px;
+}
+.card-front .portrait-img { width: auto; height: 106px; }
+.portrait-img {
+    display: block;
+    margin: 0 auto;
+}
+.card-name { font-weight: 800; font-size: 0.95rem; }
+.card-attrs { display: inline-flex; gap: 4px; align-items: center; min-height: 16px; }
+.card-attrs .no-attrs { font-size: 0.72rem; color: var(--ink-soft); font-weight: 700; }
+
+.fox-card.pulse .card-back {
+    animation: card-glow 1.1s ease-in-out infinite;
+}
+@keyframes card-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 134, 58, 0); }
+    50% { box-shadow: 0 0 0 5px rgba(232, 134, 58, 0.55); }
+}
+@media (hover: hover) {
+    .fox-card:hover .card-inner { transform: translateY(-3px); }
+    .fox-card.revealed:hover .card-inner { transform: rotateY(180deg) translateY(-3px); }
+}
+
+.fox-card.released .card-front { filter: grayscale(0.7); opacity: 0.75; }
+
+.stamp {
+    position: absolute;
+    top: 44%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-16deg);
+    border: 3px solid;
+    border-radius: 6px;
+    padding: 1px 7px;
+    font-weight: 900;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    background: rgba(255, 250, 240, 0.82);
+    white-space: nowrap;
+    pointer-events: none;
+}
+.stamp-released { color: #8a8a8a; border-color: #8a8a8a; }
+
+/* ================= Панель действий ================= */
+.action-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 250, 240, 0.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-top: 2px solid rgba(74, 50, 38, 0.15);
+    box-shadow: 0 -4px 16px rgba(74, 50, 38, 0.12);
+}
+.players-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+.player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 2px solid transparent;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    transition: border-color 0.2s, background 0.2s;
+}
+.player-chip .chip-avatar {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: var(--art-bg);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.player-chip.active {
+    border-color: var(--accent);
+    background: #ffedd8;
+    color: var(--ink);
+}
+.status {
+    flex: 1;
+    text-align: center;
+    font-weight: 800;
+    font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+    min-height: 1.3em;
+}
+.status.flash { animation: status-in 0.35s ease-out; }
+@keyframes status-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+.status.st-good { color: var(--green); }
+.status.st-bad { color: var(--red); }
+.status.st-warn { color: #b07a00; }
+.action-buttons { display: flex; align-items: center; gap: 8px; }
+.steps-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    background: var(--panel-2);
+    border: 2px solid rgba(74, 50, 38, 0.15);
+    border-radius: 999px;
+    padding: 6px 14px;
+}
+.steps-icon { display: inline-flex; }
+
+/* ================= Модальные окна ================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(60, 40, 20, 0.5);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.modal {
+    background: var(--art-bg);
+    border-radius: 20px;
+    padding: 22px 24px;
+    width: min(94vw, 440px);
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(40, 25, 12, 0.35);
+    animation: modal-pop 0.25s cubic-bezier(0.34, 1.3, 0.64, 1);
+    text-align: center;
+}
+@keyframes modal-pop {
+    from { opacity: 0; transform: scale(0.92) translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+.modal h2 {
+    margin: 0 0 8px;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.modal-icon { display: inline-flex; }
+.modal-sub { margin: 0 0 16px; color: var(--ink-soft); font-weight: 600; }
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+/* Настройка игры */
+.count-picker { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; }
+.count-picker button {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius);
+    border: 3px solid #e3cba4;
+    background: var(--panel-2);
+    font-family: inherit;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.count-picker button.selected {
+    border-color: var(--accent);
+    background: #ffedd8;
+    color: var(--ink);
+    transform: scale(1.08);
+}
+.player-names { display: flex; flex-direction: column; gap: 14px; }
+.player-setup-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: var(--radius);
+    background: rgba(253, 243, 223, 0.6);
+    border: 2px solid #eeddbd;
+}
+.player-name-row { display: flex; align-items: center; gap: 8px; }
+.player-name-row .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+}
+.player-name-row input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 2px solid #e3cba4;
+    background: var(--panel);
+    outline: none;
+    min-width: 0;
+}
+.player-name-row input:focus { border-color: var(--accent); }
+
+/* Выбор зверька */
+.animal-picker { display: flex; justify-content: center; gap: 10px; }
+.animal-btn {
+    width: 66px;
+    height: 82px;
+    border-radius: 14px;
+    border: 3px solid #e3cba4;
+    background: var(--art-bg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s;
+}
+.animal-btn .detective-img { width: 100%; height: 100%; object-fit: cover; }
+.animal-btn.selected {
+    border-color: var(--accent);
+    background: #ffedd8;
+    transform: scale(1.12);
+    box-shadow: var(--shadow-sm);
+}
+.animal-btn.taken { opacity: 0.3; cursor: not-allowed; }
+@media (hover: hover) {
+    .animal-btn:not(.taken):not(.selected):hover { border-color: var(--accent-dark); transform: scale(1.05); }
+}
+
+/* Кубики */
+.target-picker { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; }
+.target-btn {
+    flex: 1;
+    max-width: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 8px;
+    border-radius: var(--radius);
+    border: 3px solid #e3cba4;
+    background: var(--panel-2);
+    font-family: inherit;
+    font-weight: 800;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.target-btn small { color: var(--ink-soft); font-weight: 600; }
+.target-btn .target-icon { display: inline-flex; height: 30px; align-items: center; }
+.target-btn.selected { border-color: var(--accent); background: #ffedd8; transform: scale(1.04); }
+.target-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.target-btn.locked-choice { pointer-events: none; }
+.target-btn.locked-choice:not(.selected) { opacity: 0.35; }
+
+.dice-row { display: flex; justify-content: center; gap: 14px; margin: 6px 0 10px; }
+.die {
+    width: 64px;
+    height: 64px;
+    background: #fff;
+    border: 3px solid #b09879;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.die .die-q { font-size: 30px; font-weight: 900; color: #c9b18d; }
+.die.locked { border-color: var(--green); background: var(--green-soft); transform: scale(1.05); }
+.die.rolling { animation: die-shake 0.45s ease-in-out; }
+@keyframes die-shake {
+    0% { transform: translateY(0) rotate(0); }
+    25% { transform: translateY(-10px) rotate(-14deg); }
+    50% { transform: translateY(2px) rotate(10deg); }
+    75% { transform: translateY(-6px) rotate(-6deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+.dice-hint { min-height: 1.4em; margin: 4px 0 0; font-weight: 700; color: var(--ink-soft); }
+.dice-hint.st-good { color: var(--green); }
+.dice-hint.st-bad { color: var(--red); }
+.dice-hint.st-warn { color: #b07a00; }
+.dice-actions { align-items: center; }
+.rolls-left { font-weight: 800; font-size: 1.05rem; }
+
+/* Дешифратор */
+.clue-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.clue-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: var(--radius);
+    border: 3px solid #e3cba4;
+    background: var(--art-bg);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.clue-option .clue-icon { display: inline-flex; height: 46px; align-items: center; }
+.item-img { display: inline-block; vertical-align: middle; border-radius: 6px; }
+@media (hover: hover) {
+    .clue-option:not(:disabled):hover { border-color: var(--accent); background: #ffedd8; }
+}
+.clue-option:disabled { opacity: 0.4; cursor: not-allowed; }
+.clue-option.checked-yes { border-color: var(--green); background: var(--green-soft); opacity: 0.85; }
+.clue-option.checked-no { border-color: #c9b8a4; background: #f1ece4; opacity: 0.75; }
+.decoder-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 1.5em;
+    margin: 14px 0 0;
+    font-weight: 800;
+    font-size: 1.1rem;
+    animation: status-in 0.3s ease-out;
+}
+.decoder-result.res-yes { color: var(--green); }
+.decoder-result.res-no { color: var(--ink-soft); }
+
+/* Досье */
+.dossier-portrait { display: flex; justify-content: center; margin: 0 auto; }
+.dossier-portrait .portrait-img { width: auto; height: 200px; }
+.dossier-name { font-size: 1.4rem; font-weight: 900; margin: 6px 0 2px; }
+.dossier-attrs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+.dossier-attr {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--art-bg);
+    border: 2px solid #e3cba4;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.modal-icon-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.dossier-note { margin-top: 12px; font-weight: 700; }
+.dossier-note.warn { color: var(--red); }
+.dossier-note.ok { color: var(--green); }
+
+/* Конец игры */
+.endgame-art { display: flex; justify-content: center; margin-bottom: 4px; }
+.endgame-title { font-size: 1.6rem; font-weight: 900; margin: 6px 0; }
+.endgame-title.win { color: var(--green); }
+.endgame-title.lose { color: var(--red); }
+.endgame-thief { margin-top: 10px; }
+.endgame-thief .portrait-img { width: auto; height: 150px; }
+
+/* ================= Планшет ================= */
+@media (max-width: 1180px) {
+    .fox-card { width: 104px; height: 148px; }
+    .card-front .portrait-img { height: 86px; }
+}
+
+/* ================= Мобильные ================= */
+@media (max-width: 767px) {
+    body { padding-bottom: 130px; }
+
+    .header-row { justify-content: center; }
+
+    .game-table {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px 10px 16px;
+    }
+    .board-wrap { order: 1; width: min(96vw, 520px); }
+    .edge-top { order: 2; }
+    .edge-right { order: 3; }
+    .edge-bottom { order: 4; }
+    .edge-left { order: 5; }
+
+    .suspect-edge {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        flex-direction: unset;
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+    .fox-card { width: 100%; height: 128px; }
+    .card-front { padding: 4px 2px; }
+    .card-front .portrait-img { height: 82px; }
+    .card-name { font-size: 0.78rem; }
+    .card-attrs { display: none; }
+    .stamp { font-size: 0.62rem; }
+
+    .action-bar { flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+    .players-strip { width: 100%; justify-content: center; }
+    .status { flex-basis: 100%; order: -1; }
+
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal {
+        width: 100%;
+        max-width: none;
+        border-radius: 22px 22px 0 0;
+        padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+        animation: modal-slide-up 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+    @keyframes modal-slide-up {
+        from { opacity: 0.5; transform: translateY(60%); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .die { width: 56px; height: 56px; }
+    .animal-btn { width: 54px; height: 70px; }
+}
