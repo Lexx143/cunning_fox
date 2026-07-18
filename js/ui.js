@@ -242,10 +242,13 @@ function updateBoardCells() {
 function updateReachable() {
     for (const cell of $('board-grid').children) cell.classList.remove('reachable');
     if (state.phase !== 'moving' || state.steps <= 0) return;
+    // доступна сразу вся область ходьбы: клетки на расстоянии Чебышёва 1..steps
     const p = state.players[state.current].pos;
-    for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
+    const n = state.steps;
+    for (let dy = -n; dy <= n; dy++) {
+        for (let dx = -n; dx <= n; dx++) {
+            const d = Math.max(Math.abs(dx), Math.abs(dy));
+            if (d === 0 || d > n) continue;
             const nx = p.x + dx, ny = p.y + dy;
             if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
                 cellAt(nx, ny).classList.add('reachable');

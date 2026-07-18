@@ -9,19 +9,27 @@ const Tutorial = (() => {
 
     // Сценарий: text — ключ i18n; target — селектор или функция → элемент;
     // advance: 'next' (кнопка) | 'event:имя' (ждём событие игры)
+    // Кубики в обучении «подкручены»: 1-й ход всегда «глаза», 2-й — «следы».
     const SCRIPT = [
-        { text: 'tut1',  target: '#fox-token',        advance: 'next' },
-        { text: 'tut2',  target: '#edge-top',         advance: 'event:revealed2' },
-        { text: 'tut3',  target: '#roll-open-btn',    advance: 'event:diceOpened' },
-        { text: 'tut4',  target: '#target-picker',    advance: 'next' },
-        { text: 'tut5',  target: '#roll-btn',         advance: 'event:rollResolved' },
-        { text: 'tut6',  target: '#fox-danger',       advance: 'next' },
-        { text: 'tut7',  target: '#board-wrap',       advance: 'event:cluePicked' },
-        { text: 'tut9',  target: '#clue-chips',       advance: 'next' },
-        { text: 'tut10', target: '#edge-top',         advance: 'next' },
-        { text: 'tut11', target: '#edge-top',         advance: 'next' },
-        { text: 'tut12', target: null,                advance: 'finish' },
+        { text: 'tut1',           target: '#fox-token',     advance: 'next' },
+        { text: 'tut2',           target: '#edge-top',      advance: 'event:revealed2' },
+        { text: 'tut3',           target: '#roll-open-btn', advance: 'event:diceOpened' },
+        { text: 'tut_eyes',       target: '#roll-btn',      advance: 'event:rollResolved' },
+        { text: 'tut_open_more',  target: '#edge-top',      advance: 'event:revealed2' },
+        { text: 'tut_roll_again', target: '#roll-open-btn', advance: 'event:diceOpened' },
+        { text: 'tut_paws',       target: '#roll-btn',      advance: 'event:rollResolved' },
+        { text: 'tut6',           target: '#fox-danger',    advance: 'next' },
+        { text: 'tut7',           target: '#board-wrap',    advance: 'event:cluePicked' },
+        { text: 'tut9',           target: '#clue-chips',    advance: 'next' },
+        { text: 'tut10',          target: '#edge-top',      advance: 'next' },
+        { text: 'tut11',          target: '#edge-top',      advance: 'next' },
+        { text: 'tut12',          target: null,             advance: 'finish' },
     ];
+
+    // «Подкрутка» кубиков: какой цели гарантируем успех в текущем ходе обучения
+    let riggedTurn = 0;
+    function riggedTarget() { return riggedTurn === 0 ? 'eyes' : 'clues'; }
+    function consumeRig() { riggedTurn++; }
 
     function ensureDom() {
         if (overlay) return;
@@ -100,6 +108,7 @@ const Tutorial = (() => {
         ensureDom();
         active = true;
         stepIdx = 0;
+        riggedTurn = 0;
         overlay.classList.add('visible');
         showStep();
         // элементы-цели появляются/двигаются по ходу игры — держим прожектор на месте
@@ -140,5 +149,5 @@ const Tutorial = (() => {
         return localStorage.getItem('dg_tut_done') === '1';
     }
 
-    return { start, notify, finish, isDone, get active() { return active; } };
+    return { start, notify, finish, isDone, riggedTarget, consumeRig, get active() { return active; } };
 })();

@@ -217,6 +217,10 @@ function startGame() {
     // Грибы-улики: каждый закреплён за конкретной приметой
     const clueKeys = shuffleArray(CLUE_TYPES.map(ct => ct.key));
     state.clues = [];
+    // в обучении первый гриб кладём в двух шагах от старта — до него точно хватит ходов
+    if (!Tutorial.isDone()) {
+        state.clues.push({ x: 5, y: 5, clueKey: clueKeys[0] });
+    }
     while (state.clues.length < NUM_CLUES) {
         const rx = Math.floor(Math.random() * GRID_SIZE);
         const ry = Math.floor(Math.random() * GRID_SIZE);
@@ -351,6 +355,7 @@ function openDiceModal() {
     const hiddenCount = SUSPECTS.filter(s => !s.isRevealed).length;
     if (hiddenCount === 0 && state.lastTarget === 'eyes') state.lastTarget = 'clues';
     state.uiTarget = state.lastTarget;
+    if (Tutorial.active) state.uiTarget = Tutorial.riggedTarget();
 
     const eyesBtn = document.querySelector('.target-btn[data-target="eyes"]');
     eyesBtn.disabled = hiddenCount === 0;
@@ -390,6 +395,8 @@ function rollDice() {
     if (state.phase !== 'rolling' || state.rollsLeft <= 0 || state.rollingAnim) return;
 
     if (state.target === null) {
+        // в обучении цель хода задана сценарием: сначала «глаза», потом «следы»
+        if (Tutorial.active) state.uiTarget = Tutorial.riggedTarget();
         state.target = state.uiTarget;
         state.lastTarget = state.uiTarget;
         updateTargetPickerUI();
@@ -410,7 +417,13 @@ function rollDice() {
         for (let i = 0; i < 3; i++) {
             $('die-' + i).classList.remove('rolling');
             if (!state.locked[i]) {
-                const face = DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
+                let face;
+                if (Tutorial.active) {
+                    // в обучении бросок всегда удачный: глаза либо следы (2+1+1 = 4 шага)
+                    face = state.target === 'eyes' ? DICE_FACES[0] : (i === 0 ? DICE_FACES[5] : DICE_FACES[3]);
+                } else {
+                    face = DICE_FACES[Math.floor(Math.random() * DICE_FACES.length)];
+                }
                 state.dice[i] = { ...face };
                 if (face.type === state.target) state.locked[i] = true;
             }
@@ -429,6 +442,7 @@ function resolveRoll() {
 
     if (matching === 3) {
         Sound.play('success');
+        if (Tutorial.active) Tutorial.consumeRig();
         Tutorial.notify('rollResolved');
         if (state.target === 'eyes') {
             hint.textContent = t('dice_success_eyes');
@@ -495,12 +509,11 @@ function playerOnClue() {
 function onCellClick(x, y) {
     if (state.phase !== 'moving' || state.steps <= 0) return;
     const p = activePlayer();
-    const dx = Math.abs(x - p.pos.x);
-    const dy = Math.abs(y - p.pos.y);
-    if (dx > 1 || dy > 1 || (dx === 0 && dy === 0)) return;
+    const dist = Math.max(Math.abs(x - p.pos.x), Math.abs(y - p.pos.y));
+    if (dist === 0 || dist > state.steps) return;
 
     p.pos = { x, y };
-    state.steps--;
+    state.steps -= dist;
     Sound.play('step', 0.7);
     positionPawns();
     updateReachable();
