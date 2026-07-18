@@ -1,0 +1,9 @@
+{
+  "appId": "kz.lexx.detectivegang",
+  "appName": "Detective Gang",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "backgroundColor": "#f7e8cf"
+}

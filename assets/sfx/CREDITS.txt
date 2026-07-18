@@ -1,0 +1,5 @@
+CC0 sounds by Kenney (kenney.nl):
+- UI SFX Set (clicks)
+- Casino Audio (dice, cards, chips)
+- Music Jingles (pizzicato)
+License: Creative Commons Zero (CC0)

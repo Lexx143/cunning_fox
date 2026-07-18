@@ -1,33 +1,33 @@
-// ================= Данные игры «Хитрый Лис» =================
+// ================= Данные игры «Детективная братва» =================
 
 const GRID_SIZE = 16;
 const NUM_CLUES = 6;
 const FOX_TRACK_LENGTH = 16; // позиция 16 — нора, лис сбежал
 
-// Типы улик / примет (иконки рисуются в ui.js)
+// Типы улик / примет (подписи — через i18n: t('clue_' + key))
 const CLUE_TYPES = [
-    { key: 'hat',      label: 'Шляпа' },
-    { key: 'glasses',  label: 'Очки' },
-    { key: 'scarf',    label: 'Шарф' },
-    { key: 'umbrella', label: 'Зонтик' },
-    { key: 'monocle',  label: 'Монокль' },
-    { key: 'watch',    label: 'Часы' },
+    { key: 'hat' },
+    { key: 'glasses' },
+    { key: 'scarf' },
+    { key: 'umbrella' },
+    { key: 'monocle' },
+    { key: 'watch' },
 ];
 
-// Зверьки-детективы на выбор
+// Зверьки-детективы на выбор (имена — t('animal_' + key))
 const ANIMALS = [
-    { key: 'badger',   name: 'Барсук' },
-    { key: 'otter',    name: 'Выдра' },
-    { key: 'hedgehog', name: 'Ёжик' },
-    { key: 'raccoon',  name: 'Енот' },
+    { key: 'badger' },
+    { key: 'otter' },
+    { key: 'hedgehog' },
+    { key: 'raccoon' },
 ];
 
 // Цвета фишек сыщиков (1–4 игрока)
 const PLAYER_COLORS = [
-    { name: 'Синий',      value: '#3b82c4' },
-    { name: 'Красный',    value: '#d9534f' },
-    { name: 'Зелёный',    value: '#4f9d5d' },
-    { name: 'Фиолетовый', value: '#8e6bb8' },
+    { key: 'blue',   value: '#3b82c4' },
+    { key: 'red',    value: '#d9534f' },
+    { key: 'green',  value: '#4f9d5d' },
+    { key: 'purple', value: '#8e6bb8' },
 ];
 
 // Стартовые клетки сыщиков (центр поля)
@@ -45,30 +45,30 @@ const FOX_PATH = [
     { x: 15, y: 2 }, // нора
 ];
 
-// Декор лужайки (типы рисуются в ui.js); взвешенный набор для случайного выбора
+// Декор лужайки (типы — файлы decor-*.png); взвешенный набор для случайного выбора
 const DECOR_POOL = [
     'grass', 'grass', 'grass', 'bush', 'bush',
     'flower-pink', 'flower-pink', 'flower-white', 'flower-white', 'stone',
 ];
 
-// Подозреваемые: имя + приметы
+// Подозреваемые: имя (ru/en) + приметы
 const SUSPECTS = [
-    { name: 'Алиса',     hat: true,  glasses: false, scarf: true,  umbrella: false, monocle: false, watch: false },
-    { name: 'Артур',     hat: false, glasses: true,  scarf: false, umbrella: false, monocle: false, watch: true  },
-    { name: 'Беатрис',   hat: false, glasses: false, scarf: false, umbrella: true,  monocle: true,  watch: false },
-    { name: 'Чарльз',    hat: true,  glasses: true,  scarf: false, umbrella: false, monocle: false, watch: true  },
-    { name: 'Дейзи',     hat: false, glasses: false, scarf: true,  umbrella: true,  monocle: false, watch: false },
-    { name: 'Эдит',      hat: false, glasses: true,  scarf: false, umbrella: false, monocle: true,  watch: false },
-    { name: 'Фрэнк',     hat: true,  glasses: false, scarf: false, umbrella: false, monocle: false, watch: true  },
-    { name: 'Гертруда',  hat: false, glasses: false, scarf: true,  umbrella: false, monocle: true,  watch: false },
-    { name: 'Гарольд',   hat: false, glasses: false, scarf: false, umbrella: true,  monocle: false, watch: true  },
-    { name: 'Ингрид',    hat: true,  glasses: false, scarf: false, umbrella: true,  monocle: false, watch: false },
-    { name: 'Юстина',    hat: false, glasses: true,  scarf: true,  umbrella: false, monocle: false, watch: false },
-    { name: 'Лео',       hat: false, glasses: false, scarf: false, umbrella: false, monocle: true,  watch: true  },
-    { name: 'Мэри',      hat: true,  glasses: false, scarf: true,  umbrella: true,  monocle: false, watch: false },
-    { name: 'Оливия',    hat: false, glasses: true,  scarf: true,  umbrella: false, monocle: false, watch: true  },
-    { name: 'Пол',       hat: true,  glasses: false, scarf: false, umbrella: true,  monocle: true,  watch: false },
-    { name: 'Себастьян', hat: false, glasses: true,  scarf: false, umbrella: true,  monocle: false, watch: true  },
+    { name: { ru: 'Алиса',     en: 'Alice' },     hat: true,  glasses: false, scarf: true,  umbrella: false, monocle: false, watch: false },
+    { name: { ru: 'Артур',     en: 'Arthur' },    hat: false, glasses: true,  scarf: false, umbrella: false, monocle: false, watch: true  },
+    { name: { ru: 'Беатрис',   en: 'Beatrice' },  hat: false, glasses: false, scarf: false, umbrella: true,  monocle: true,  watch: false },
+    { name: { ru: 'Чарльз',    en: 'Charles' },   hat: true,  glasses: true,  scarf: false, umbrella: false, monocle: false, watch: true  },
+    { name: { ru: 'Дейзи',     en: 'Daisy' },     hat: false, glasses: false, scarf: true,  umbrella: true,  monocle: false, watch: false },
+    { name: { ru: 'Эдит',      en: 'Edith' },     hat: false, glasses: true,  scarf: false, umbrella: false, monocle: true,  watch: false },
+    { name: { ru: 'Фрэнк',     en: 'Frank' },     hat: true,  glasses: false, scarf: false, umbrella: false, monocle: false, watch: true  },
+    { name: { ru: 'Гертруда',  en: 'Gertrude' },  hat: false, glasses: false, scarf: true,  umbrella: false, monocle: true,  watch: false },
+    { name: { ru: 'Гарольд',   en: 'Harold' },    hat: false, glasses: false, scarf: false, umbrella: true,  monocle: false, watch: true  },
+    { name: { ru: 'Ингрид',    en: 'Ingrid' },    hat: true,  glasses: false, scarf: false, umbrella: true,  monocle: false, watch: false },
+    { name: { ru: 'Юстина',    en: 'Justine' },   hat: false, glasses: true,  scarf: true,  umbrella: false, monocle: false, watch: false },
+    { name: { ru: 'Лео',       en: 'Leo' },       hat: false, glasses: false, scarf: false, umbrella: false, monocle: true,  watch: true  },
+    { name: { ru: 'Мэри',      en: 'Mary' },      hat: true,  glasses: false, scarf: true,  umbrella: true,  monocle: false, watch: false },
+    { name: { ru: 'Оливия',    en: 'Olivia' },    hat: false, glasses: true,  scarf: true,  umbrella: false, monocle: false, watch: true  },
+    { name: { ru: 'Пол',       en: 'Paul' },      hat: true,  glasses: false, scarf: false, umbrella: true,  monocle: true,  watch: false },
+    { name: { ru: 'Себастьян', en: 'Sebastian' }, hat: false, glasses: true,  scarf: false, umbrella: true,  monocle: false, watch: true  },
 ];
 
 // Грани кубика: 3 грани «глаза», 2 грани «1 след», 1 грань «2 следа»

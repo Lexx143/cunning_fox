@@ -5,7 +5,7 @@ const state = {
     players: [],   // {name, color, animal, pos:{x,y}}
     current: 0,
     fox: 0,
-    clues: [],     // улики на поле [{x,y,kind:'berry'|'mushroom'}]
+    clues: [],     // грибы-улики [{x,y,clueKey}] — примета закреплена при старте
     decor: [],     // декор лужайки [{x,y,t}]
     checked: {},   // key приметы -> есть ли она у вора (boolean)
     secretThief: null,
@@ -23,8 +23,78 @@ const state = {
     turnId: 0, // защита от устаревших setTimeout
 };
 
-// выбор зверьков на экране настройки: индекс ANIMALS для каждого игрока
+// выбор на экране настройки: индексы ANIMALS и PLAYER_COLORS для каждого игрока
 let setupAnimals = [0, 1, 2, 3];
+let setupColors = [0, 1, 2, 3];
+
+const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+// ================= Сохранение партии =================
+
+function saveGame() {
+    if (state.phase === 'idle' || state.phase === 'gameover') {
+        localStorage.removeItem('dg_save');
+        return;
+    }
+    const s = state;
+    const data = {
+        v: 1,
+        state: {
+            phase: s.phase, players: s.players, current: s.current, fox: s.fox,
+            clues: s.clues, decor: s.decor, checked: s.checked, thiefIndex: s.thiefIndex,
+            pendingReveals: s.pendingReveals, revealContext: s.revealContext,
+            steps: s.steps, lastTarget: s.lastTarget,
+        },
+        suspects: SUSPECTS.map(sp => ({ r: !!sp.isRevealed, f: !!sp.isReleased })),
+    };
+    try { localStorage.setItem('dg_save', JSON.stringify(data)); } catch (e) { /* нет места — не критично */ }
+}
+
+function loadSavedGame() {
+    try {
+        const raw = localStorage.getItem('dg_save');
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (data.v !== 1 || !data.state || !data.state.players || !data.state.players.length) return null;
+        return data;
+    } catch (e) { return null; }
+}
+
+function restoreGame(data) {
+    data.suspects.forEach((f, i) => {
+        SUSPECTS[i].isRevealed = f.r;
+        SUSPECTS[i].isReleased = f.f;
+    });
+    Object.assign(state, data.state);
+    state.secretThief = SUSPECTS[state.thiefIndex];
+    state.target = null;
+    state.dice = [null, null, null];
+    state.locked = [false, false, false];
+    state.turnId++;
+
+    buildBoard();
+    buildPawns();
+    buildSuspectCards();
+    updateDangerBadge();
+    buildClueChips();
+    renderPlayersStrip();
+    updateActionButtons();
+    updateReachable();
+    closeModal();
+
+    if (state.phase === 'revealing') {
+        setStatus(t('status_reveal_left', { n: state.pendingReveals }));
+        updateAllSuspectCards();
+    } else if (state.phase === 'moving') {
+        setStatus(t('status_steps_left', { n: state.steps }));
+    } else {
+        state.phase = 'rolling';
+        const pl = activePlayer();
+        setStatus(state.players.length > 1
+            ? t('status_turn_multi', { name: pl.name })
+            : t('status_turn_solo'));
+    }
+}
 
 // ================= Новая игра =================
 
@@ -49,52 +119,84 @@ function renderPlayerSetupRows(count) {
 
         const nameRow = document.createElement('div');
         nameRow.className = 'player-name-row';
-        nameRow.innerHTML = `<span class="dot" style="background:${PLAYER_COLORS[i].value}"></span>`;
         const inp = document.createElement('input');
         inp.type = 'text';
         inp.maxLength = 14;
-        inp.placeholder = `Сыщик ${i + 1}`;
+        inp.placeholder = t('default_name', { n: i + 1 });
         inp.value = prev[i] || '';
         nameRow.appendChild(inp);
         row.appendChild(nameRow);
 
+        // зверёк — можно выбирать любого, хоть одинаковых
         const picker = document.createElement('div');
         picker.className = 'animal-picker';
         ANIMALS.forEach((animal, ai) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'animal-btn';
-            btn.title = animal.name;
+            btn.title = animalName(animal.key);
             btn.innerHTML = detectiveImg(animal.key);
             btn.addEventListener('click', () => {
-                const takenByOther = setupAnimals.slice(0, count).some((a, pi) => pi !== i && a === ai);
-                if (takenByOther) return;
+                Sound.play('click', 0.5);
                 setupAnimals[i] = ai;
-                refreshAnimalPickers(count);
+                refreshSetupPickers(count);
             });
             picker.appendChild(btn);
         });
         row.appendChild(picker);
+
+        // цвет — уникален между игроками
+        const colors = document.createElement('div');
+        colors.className = 'color-picker';
+        PLAYER_COLORS.forEach((c, ci) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'color-btn';
+            btn.style.background = c.value;
+            btn.addEventListener('click', () => {
+                const takenBy = setupColors.slice(0, count).findIndex((cc, pi) => pi !== i && cc === ci);
+                if (takenBy !== -1) {
+                    // обмен цветами с другим игроком
+                    setupColors[takenBy] = setupColors[i];
+                }
+                setupColors[i] = ci;
+                Sound.play('click', 0.5);
+                refreshSetupPickers(count);
+            });
+            colors.appendChild(btn);
+        });
+        row.appendChild(colors);
+
         wrap.appendChild(row);
     }
-    refreshAnimalPickers(count);
+    refreshSetupPickers(count);
 }
 
-function refreshAnimalPickers(count) {
+function refreshSetupPickers(count) {
     const rows = $('player-names').querySelectorAll('.player-setup-row');
     rows.forEach((row, i) => {
         row.querySelectorAll('.animal-btn').forEach((btn, ai) => {
             btn.classList.toggle('selected', setupAnimals[i] === ai);
-            const takenByOther = setupAnimals.slice(0, count).some((a, pi) => pi !== i && a === ai);
-            btn.classList.toggle('taken', takenByOther);
+        });
+        row.querySelectorAll('.color-btn').forEach((btn, ci) => {
+            btn.classList.toggle('selected', setupColors[i] === ci);
         });
     });
+}
+
+function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
 
 function startGame() {
     const count = getSelectedPlayerCount();
     const names = [...$('player-names').querySelectorAll('input')]
-        .map((inp, i) => inp.value.trim() || ANIMALS[setupAnimals[i]].name);
+        .map((inp, i) => inp.value.trim() || animalName(ANIMALS[setupAnimals[i]].key));
 
     SUSPECTS.forEach(s => { s.isRevealed = false; s.isReleased = false; });
     state.thiefIndex = Math.floor(Math.random() * SUSPECTS.length);
@@ -102,7 +204,7 @@ function startGame() {
 
     state.players = names.map((name, i) => ({
         name,
-        color: PLAYER_COLORS[i].value,
+        color: PLAYER_COLORS[setupColors[i]].value,
         animal: ANIMALS[setupAnimals[i]].key,
         pos: { ...START_POSITIONS[i] },
     }));
@@ -112,23 +214,24 @@ function startGame() {
     state.steps = 0;
     state.turnId++;
 
-    // Раскладываем улики (ягодки и грибочки): не в центре, не на тропе лиса, без повторов
+    // Грибы-улики: каждый закреплён за конкретной приметой
+    const clueKeys = shuffleArray(CLUE_TYPES.map(ct => ct.key));
     state.clues = [];
     while (state.clues.length < NUM_CLUES) {
         const rx = Math.floor(Math.random() * GRID_SIZE);
         const ry = Math.floor(Math.random() * GRID_SIZE);
         if (isCellBlocked(rx, ry)) continue;
         if (state.clues.some(c => c.x === rx && c.y === ry)) continue;
-        state.clues.push({ x: rx, y: ry, kind: state.clues.length % 2 === 0 ? 'berry' : 'mushroom' });
+        state.clues.push({ x: rx, y: ry, clueKey: clueKeys[state.clues.length] });
     }
 
-    // Декор лужайки: кустики, цветочки, травка, камушки
+    // Декор лужайки — фоновый, неяркий
     state.decor = [];
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
             if (isCellBlocked(x, y)) continue;
             if (state.clues.some(c => c.x === x && c.y === y)) continue;
-            if (Math.random() < 0.12) {
+            if (Math.random() < 0.1) {
                 state.decor.push({ x, y, t: DECOR_POOL[Math.floor(Math.random() * DECOR_POOL.length)] });
             }
         }
@@ -138,17 +241,21 @@ function startGame() {
     buildPawns();
     buildSuspectCards();
     updateDangerBadge();
-    updateClueChips();
+    buildClueChips();
     renderPlayersStrip();
 
     state.phase = 'revealing';
     state.revealContext = 'initial';
     state.pendingReveals = 2;
-    setStatus('Лис стащил пирог и удирает к норе! Откройте 2 карты подозреваемых.');
+    setStatus(t('status_start'));
     updateAllSuspectCards();
     updateActionButtons();
     updateReachable();
     closeModal();
+    Sound.play('cardDeal');
+    saveGame();
+
+    if (!Tutorial.isDone()) Tutorial.start();
 }
 
 function isCentralArea(x, y) {
@@ -174,13 +281,14 @@ function beginTurn(index) {
     state.turnId++;
     const pl = activePlayer();
     setStatus(state.players.length > 1
-        ? `Ход: ${pl.name}. Бросайте кубики!`
-        : 'Ваш ход. Бросайте кубики!');
+        ? t('status_turn_multi', { name: pl.name })
+        : t('status_turn_solo'));
     renderPlayersStrip();
     positionPawns();
     updateActionButtons();
     updateReachable();
     updateAllSuspectCards();
+    saveGame();
 }
 
 function nextPlayer() {
@@ -189,6 +297,7 @@ function nextPlayer() {
 
 function endTurnManually() {
     if (state.phase !== 'moving') return;
+    Sound.play('click', 0.5);
     nextPlayer();
 }
 
@@ -207,13 +316,16 @@ function revealSuspect(i) {
     SUSPECTS[i].isRevealed = true;
     state.pendingReveals--;
     updateAllSuspectCards();
+    Sound.play('cardFlip');
 
     if (state.pendingReveals > 0) {
-        setStatus(`Осталось открыть карт: ${state.pendingReveals}`);
+        setStatus(t('status_reveal_left', { n: state.pendingReveals }));
+        saveGame();
         return;
     }
 
-    setStatus('Карты открыты!', 'good');
+    setStatus(t('status_cards_open'), 'good');
+    Tutorial.notify('revealed2');
     const token = state.turnId;
     setTimeout(() => {
         if (state.phase !== 'revealing' || token !== state.turnId) return;
@@ -229,6 +341,7 @@ function revealSuspect(i) {
 
 function openDiceModal() {
     if (state.phase !== 'rolling') return;
+    Sound.play('click', 0.5);
     state.rollsLeft = 3;
     state.target = null;
     state.dice = [null, null, null];
@@ -241,7 +354,7 @@ function openDiceModal() {
 
     const eyesBtn = document.querySelector('.target-btn[data-target="eyes"]');
     eyesBtn.disabled = hiddenCount === 0;
-    eyesBtn.title = hiddenCount === 0 ? 'Все карты уже открыты' : '';
+    eyesBtn.title = hiddenCount === 0 ? t('eyes_disabled') : '';
 
     updateTargetPickerUI();
     for (let i = 0; i < 3; i++) {
@@ -251,11 +364,12 @@ function openDiceModal() {
     }
     $('rolls-left').textContent = state.rollsLeft;
     const hint = $('dice-hint');
-    hint.textContent = 'Нужно 3 одинаковых символа цели!';
+    hint.textContent = t('dice_hint_start');
     hint.className = 'dice-hint';
     $('roll-btn').disabled = false;
-    $('roll-btn').textContent = 'Бросить!';
+    $('roll-btn').textContent = t('btn_roll');
     openModal('modal-dice');
+    Tutorial.notify('diceOpened');
 }
 
 function updateTargetPickerUI() {
@@ -265,9 +379,10 @@ function updateTargetPickerUI() {
     });
 }
 
-function selectTarget(t) {
+function selectTarget(tg) {
     if (state.target !== null) return; // после первого броска цель зафиксирована
-    state.uiTarget = t;
+    Sound.play('click', 0.5);
+    state.uiTarget = tg;
     updateTargetPickerUI();
 }
 
@@ -284,6 +399,7 @@ function rollDice() {
     $('rolls-left').textContent = state.rollsLeft;
     state.rollingAnim = true;
     $('roll-btn').disabled = true;
+    Sound.play('diceShake');
 
     // Анимация тряски незалоченных кубиков
     for (let i = 0; i < 3; i++) {
@@ -299,6 +415,7 @@ function rollDice() {
                 if (face.type === state.target) state.locked[i] = true;
             }
         }
+        Sound.play('diceThrow');
         updateDiceUI();
         state.rollingAnim = false;
         resolveRoll();
@@ -311,8 +428,10 @@ function resolveRoll() {
     const token = state.turnId;
 
     if (matching === 3) {
+        Sound.play('success');
+        Tutorial.notify('rollResolved');
         if (state.target === 'eyes') {
-            hint.textContent = 'Успех! Вы можете открыть карты подозреваемых.';
+            hint.textContent = t('dice_success_eyes');
             hint.className = 'dice-hint st-good';
             setTimeout(() => {
                 if (token !== state.turnId || state.phase === 'gameover') return;
@@ -321,33 +440,35 @@ function resolveRoll() {
                 state.phase = 'revealing';
                 state.revealContext = 'turn';
                 state.pendingReveals = Math.min(2, hiddenCount);
-                setStatus(state.pendingReveals === 1
-                    ? 'Откройте 1 закрытую карту.'
-                    : 'Откройте 2 закрытые карты.');
+                setStatus(state.pendingReveals === 1 ? t('status_open_1') : t('status_open_2'));
                 updateAllSuspectCards();
                 updateActionButtons();
+                saveGame();
             }, 900);
         } else {
             const steps = state.dice.reduce((sum, d) => sum + d.steps, 0);
-            hint.textContent = `Успех! Шагов сыщика: ${steps}.`;
+            hint.textContent = t('dice_success_steps', { n: steps });
             hint.className = 'dice-hint st-good';
             setTimeout(() => {
                 if (token !== state.turnId || state.phase === 'gameover') return;
                 closeModal();
                 state.phase = 'moving';
                 state.steps = steps;
-                setStatus(`Идите по подсвеченным клеткам. Шагов: ${steps}.`);
+                setStatus(t('status_move', { n: steps }));
                 updateActionButtons();
                 updateReachable();
+                saveGame();
             }, 900);
         }
     } else if (state.rollsLeft === 0) {
-        hint.textContent = 'Провал! Лис делает 3 шага к норе…';
+        Sound.play('fail');
+        Tutorial.notify('rollResolved');
+        hint.textContent = t('dice_fail');
         hint.className = 'dice-hint st-bad';
         setTimeout(() => {
             if (token !== state.turnId || state.phase === 'gameover') return;
             closeModal();
-            setStatus('Провал броска! Лис убегает на 3 шага.', 'bad');
+            setStatus(t('status_fail'), 'bad');
             moveFox(3);
             if (state.phase !== 'gameover') {
                 setTimeout(() => {
@@ -357,10 +478,10 @@ function resolveRoll() {
             }
         }, 1100);
     } else {
-        hint.textContent = `Совпадений: ${matching} из 3. Бросайте ещё!`;
+        hint.textContent = t('dice_matches', { n: matching });
         hint.className = 'dice-hint st-warn';
         $('roll-btn').disabled = false;
-        $('roll-btn').textContent = 'Перебросить';
+        $('roll-btn').textContent = t('btn_reroll');
     }
 }
 
@@ -380,98 +501,73 @@ function onCellClick(x, y) {
 
     p.pos = { x, y };
     state.steps--;
+    Sound.play('step', 0.7);
     positionPawns();
     updateReachable();
     updateActionButtons();
+    saveGame();
 
     const onClue = playerOnClue();
-    const cluesRemain = Object.keys(state.checked).length < CLUE_TYPES.length;
 
-    if (onClue && cluesRemain) {
-        setStatus(state.steps > 0
-            ? 'Вы нашли улику! Проверьте её или идите дальше.'
-            : 'Вы нашли улику! Проверьте её или завершите ход.', 'good');
+    if (onClue) {
+        Sound.play('clue', 0.8);
+        setStatus(state.steps > 0 ? t('status_clue_found_move') : t('status_clue_found_end'), 'good');
+        Tutorial.notify('reachedClue');
     } else if (state.steps === 0) {
-        setStatus('Шаги закончились.');
+        setStatus(t('status_no_steps'));
         const token = state.turnId;
         setTimeout(() => {
             if (state.phase !== 'moving' || token !== state.turnId) return;
             nextPlayer();
         }, 800);
     } else {
-        setStatus(`Шагов осталось: ${state.steps}.`);
+        setStatus(t('status_steps_left', { n: state.steps }));
     }
 }
 
-// ================= Дешифратор =================
+// ================= Гриб-улика и дешифратор =================
 
-function openDecoderModal() {
-    if (state.phase !== 'moving' || !playerOnClue()) return;
-    const grid = $('decoder-clues');
-    grid.innerHTML = '';
-    CLUE_TYPES.forEach(ct => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'clue-option';
-        btn.innerHTML = `<span class="clue-icon">${itemImg(ct.key, 46)}</span>${ct.label}`;
-        if (ct.key in state.checked) {
-            btn.disabled = true;
-            btn.classList.add(state.checked[ct.key] ? 'checked-yes' : 'checked-no');
-        } else {
-            btn.addEventListener('click', () => checkClue(ct, btn));
-        }
-        grid.appendChild(btn);
-    });
-    $('decoder-sub').textContent = 'Выберите примету для проверки:';
-    $('decoder-result').textContent = '';
-    $('decoder-close-btn').textContent = 'Закрыть';
-    openModal('modal-decoder');
-}
-
-function checkClue(ct, btn) {
-    const hasIt = !!state.secretThief[ct.key];
-    state.checked[ct.key] = hasIt;
-
-    // Улика на поле потрачена
+function pickMushroom() {
+    if (state.phase !== 'moving') return;
     const p = activePlayer();
     const idx = state.clues.findIndex(c => c.x === p.pos.x && c.y === p.pos.y);
-    if (idx !== -1) state.clues.splice(idx, 1);
+    if (idx === -1) return;
 
-    const result = $('decoder-result');
-    if (hasIt) {
-        result.innerHTML = `${itemImg(ct.key, 24)} У вора ЕСТЬ: ${ct.label.toLowerCase()}`;
-        result.className = 'decoder-result res-yes';
-    } else {
-        result.innerHTML = `${itemImg(ct.key, 24)} У вора НЕТ: ${ct.label.toLowerCase()}`;
-        result.className = 'decoder-result res-no';
-    }
-    $('decoder-sub').textContent = 'Улика расшифрована!';
+    const clue = state.clues[idx];
+    const hasIt = !!state.secretThief[clue.clueKey];
+    state.checked[clue.clueKey] = hasIt;
+    state.clues.splice(idx, 1);
 
-    // Блокируем дальнейший выбор — одна находка = одна проверка
-    $('decoder-clues').querySelectorAll('.clue-option').forEach(b => {
-        b.disabled = true;
-        if (b === btn) b.classList.add(hasIt ? 'checked-yes' : 'checked-no');
-    });
-    $('decoder-close-btn').textContent = 'Готово';
+    const label = t('clue_' + clue.clueKey);
+    $('decoder-box').innerHTML = `
+        <div class="decoder-mushroom">${mushroomImg(84)}</div>
+        <div class="decoder-item">${itemImg(clue.clueKey, 72)}</div>
+        <p class="decoder-result ${hasIt ? 'res-yes' : 'res-no'}">
+            ${hasIt ? t('decoder_has', { label }) : t('decoder_hasnt', { label })}
+        </p>`;
+    openModal('modal-decoder');
+    Sound.play(hasIt ? 'success' : 'cardFlip');
 
     updateClueChips();
     updateBoardCells();
-    updateAllSuspectCards();
     updateActionButtons();
+    saveGame();
+    Tutorial.notify('cluePicked');
 }
 
 function closeDecoderModal() {
+    Sound.play('click', 0.5);
     closeModal();
     if (state.phase !== 'moving') return;
     if (state.steps === 0) {
         const token = state.turnId;
-        setStatus('Шаги закончились.');
+        setStatus(t('status_no_steps'));
         setTimeout(() => {
             if (state.phase !== 'moving' || token !== state.turnId) return;
             nextPlayer();
         }, 700);
     } else {
-        setStatus(`Шагов осталось: ${state.steps}.`);
+        setStatus(t('status_steps_left', { n: state.steps }));
     }
 }
 
@@ -480,19 +576,20 @@ function closeDecoderModal() {
 function openDossier(i) {
     if (state.phase === 'gameover') return;
     const s = SUSPECTS[i];
+    Sound.play('cardFlip', 0.6);
 
     const attrs = CLUE_TYPES.filter(ct => s[ct.key])
-        .map(ct => `<span class="dossier-attr">${itemImg(ct.key, 20)} ${ct.label}</span>`)
-        .join('') || '<span class="dossier-attr">Нет примет</span>';
+        .map(ct => `<span class="dossier-attr">${itemImg(ct.key, 20)} ${t('clue_' + ct.key)}</span>`)
+        .join('') || `<span class="dossier-attr">${t('no_attrs_full')}</span>`;
 
     // Сравнение примет с уликами — задача юных сыщиков, подсказок не даём
     const note = s.isReleased
-        ? '<p class="dossier-note">Этот лис уже отпущен на свободу.</p>'
+        ? `<p class="dossier-note">${t('dossier_released')}</p>`
         : '';
 
     $('dossier-content').innerHTML = `
         <div class="dossier-portrait">${suspectImg(i)}</div>
-        <div class="dossier-name">${s.name}</div>
+        <div class="dossier-name">${suspectName(s)}</div>
         <div class="dossier-attrs">${attrs}</div>
         ${note}`;
 
@@ -501,20 +598,20 @@ function openDossier(i) {
     if (!s.isReleased) {
         const accuseBtn = document.createElement('button');
         accuseBtn.className = 'btn btn-danger';
-        accuseBtn.textContent = 'Обвинить!';
+        accuseBtn.textContent = t('btn_accuse');
         accuseBtn.addEventListener('click', () => confirmAccuse(i));
         actions.appendChild(accuseBtn);
 
         const releaseBtn = document.createElement('button');
         releaseBtn.className = 'btn btn-secondary';
-        releaseBtn.textContent = 'Отпустить';
+        releaseBtn.textContent = t('btn_release');
         releaseBtn.addEventListener('click', () => releaseSuspect(i));
         actions.appendChild(releaseBtn);
     }
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn';
-    closeBtn.textContent = 'Закрыть';
-    closeBtn.addEventListener('click', closeModal);
+    closeBtn.textContent = t('btn_close');
+    closeBtn.addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
     actions.appendChild(closeBtn);
 
     openModal('modal-dossier');
@@ -523,13 +620,16 @@ function openDossier(i) {
 function releaseSuspect(i) {
     SUSPECTS[i].isReleased = true;
     updateSuspectCard(i);
+    Sound.play('cardDeal', 0.7);
     closeModal();
+    saveGame();
 }
 
 function confirmAccuse(i) {
     const s = SUSPECTS[i];
-    $('confirm-title').textContent = `Обвинить: ${s.name}?`;
-    $('confirm-text').textContent = 'Если вы ошибётесь, лис убежит на 5 шагов к норе!';
+    Sound.play('click', 0.5);
+    $('confirm-title').textContent = t('confirm_accuse_title', { name: suspectName(s) });
+    $('confirm-text').textContent = t('confirm_accuse_text');
     $('confirm-yes-btn').onclick = () => resolveAccuse(i);
     $('confirm-no-btn').onclick = () => openDossier(i);
     openModal('modal-confirm');
@@ -543,17 +643,19 @@ function resolveAccuse(i) {
     // Мимо: подозреваемый доказал невиновность, лис получает фору
     SUSPECTS[i].isReleased = true;
     updateSuspectCard(i);
-    $('confirm-title').textContent = 'Мимо!';
-    $('confirm-text').textContent = `${SUSPECTS[i].name} — не вор. Лис убегает на 5 шагов!`;
+    Sound.play('wrong');
+    $('confirm-title').textContent = t('miss_title');
+    $('confirm-text').textContent = t('miss_text', { name: suspectName(SUSPECTS[i]) });
     $('confirm-no-btn').classList.add('hidden');
     const yes = $('confirm-yes-btn');
-    yes.textContent = 'Понятно';
+    yes.textContent = t('btn_ok');
     yes.onclick = () => {
-        yes.textContent = 'Да';
+        yes.textContent = t('btn_yes');
         $('confirm-no-btn').classList.remove('hidden');
         closeModal();
-        setStatus(`Ложное обвинение! ${SUSPECTS[i].name} отпущен, лис бежит.`, 'bad');
+        setStatus(t('status_false_accuse', { name: suspectName(SUSPECTS[i]) }), 'bad');
         moveFox(5);
+        saveGame();
     };
 }
 
@@ -561,9 +663,11 @@ function resolveAccuse(i) {
 
 function moveFox(n) {
     state.fox = Math.min(FOX_TRACK_LENGTH, state.fox + n);
+    Sound.play('foxRun', 0.8);
     positionFoxToken();
     updateDangerBadge();
     if (state.fox >= FOX_TRACK_LENGTH) endGame(false);
+    else saveGame();
 }
 
 function endGame(isWin) {
@@ -572,28 +676,135 @@ function endGame(isWin) {
     const thief = state.secretThief;
     const content = $('endgame-content');
     if (isWin) {
+        Sound.play('win');
         content.innerHTML = `
             <div class="endgame-art">${pieImg(120)}</div>
-            <div class="endgame-title win">Дело раскрыто!</div>
-            <p class="modal-sub">Пирог возвращён! Вор пойман с поличным:</p>
+            <div class="endgame-title win">${t('win_title')}</div>
+            <p class="modal-sub">${t('win_sub')}</p>
             <div class="endgame-thief">${suspectImg(state.thiefIndex)}
-                <div class="dossier-name">${thief.name}</div>
+                <div class="dossier-name">${suspectName(thief)}</div>
             </div>`;
-        setStatus(`Победа! Вор — ${thief.name}!`, 'good');
+        setStatus(t('status_win', { name: suspectName(thief) }), 'good');
     } else {
+        Sound.play('lose');
         content.innerHTML = `
             <div class="endgame-art">${burrowImg(120)}</div>
-            <div class="endgame-title lose">Лис сбежал!</div>
-            <p class="modal-sub">Лис скрылся в норе вместе с пирогом. Вором был:</p>
+            <div class="endgame-title lose">${t('lose_title')}</div>
+            <p class="modal-sub">${t('lose_sub')}</p>
             <div class="endgame-thief">${suspectImg(state.thiefIndex)}
-                <div class="dossier-name">${thief.name}</div>
+                <div class="dossier-name">${suspectName(thief)}</div>
             </div>`;
-        setStatus(`Лис скрылся в норе. Вором был ${thief.name}.`, 'bad');
+        setStatus(t('status_lose', { name: suspectName(thief) }), 'bad');
     }
     updateActionButtons();
     updateReachable();
     updateAllSuspectCards();
     openModal('modal-endgame');
+    saveGame(); // очистит сохранение
+}
+
+// ================= Настройки и правила =================
+
+function openSettings() {
+    Sound.play('click', 0.5);
+    $('set-music-toggle').checked = Sound.musicOn;
+    $('set-sfx-toggle').checked = Sound.sfxOn;
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.lang === LANG);
+    });
+    $('donate-row').classList.toggle('hidden', !IS_NATIVE);
+    openModal('modal-settings');
+}
+
+function switchLang(lang) {
+    if (lang === LANG) return;
+    LANG = lang;
+    localStorage.setItem('dg_lang', lang);
+    applyStaticTexts();
+    buildClueChips();
+    if (state.players.length) {
+        buildSuspectCards();
+        renderPlayersStrip();
+    }
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.lang === LANG);
+    });
+}
+
+// --- Правила (карусель) ---
+const RULE_SLIDES = [
+    { img: () => foxThiefImg(110), tKey: 'rule1_t', key: 'rule1' },
+    { img: () => diceIconImg(110), tKey: 'rule2_t', key: 'rule2' },
+    { img: () => mushroomImg(110), tKey: 'rule3_t', key: 'rule3' },
+    { img: () => magnifierImg(110), tKey: 'rule4_t', key: 'rule4' },
+    { img: () => `<img class="rules-suspect" src="${ASSET_DIR}${SUSPECT_IMGS[0]}" alt="">`, tKey: 'rule5_t', key: 'rule5' },
+    { img: () => pieImg(110), tKey: 'rule6_t', key: 'rule6' },
+];
+let ruleIdx = 0;
+
+function openRules() {
+    Sound.play('click', 0.5);
+    ruleIdx = 0;
+    renderRuleSlide();
+    openModal('modal-rules');
+}
+
+function renderRuleSlide() {
+    const s = RULE_SLIDES[ruleIdx];
+    $('rules-slide').innerHTML = `
+        <div class="rules-art">${s.img()}</div>
+        <div class="rules-slide-title">${t(s.tKey)}</div>
+        <p class="rules-text">${t(s.key)}</p>`;
+    $('rules-dots').innerHTML = RULE_SLIDES
+        .map((_, i) => `<span class="dot-nav${i === ruleIdx ? ' on' : ''}"></span>`).join('');
+    $('rules-prev').disabled = ruleIdx === 0;
+    $('rules-next').textContent = ruleIdx === RULE_SLIDES.length - 1 ? t('btn_close') : '→';
+}
+
+// ================= Донат (Google Play Billing через cordova-plugin-purchase) =================
+
+function initDonation() {
+    if (!IS_NATIVE || !window.CdvPurchase) return;
+    try {
+        const { store, ProductType, Platform } = window.CdvPurchase;
+        store.register([{ id: 'donate_5', type: ProductType.CONSUMABLE, platform: Platform.GOOGLE_PLAY }]);
+        store.when().approved(tr => { tr.finish(); alert(t('donate_thanks')); });
+        store.initialize([Platform.GOOGLE_PLAY]);
+        $('donate-btn').addEventListener('click', () => {
+            const offer = store.get('donate_5', Platform.GOOGLE_PLAY)?.getOffer();
+            if (offer) offer.order();
+        });
+    } catch (e) { /* биллинг недоступен — кнопка просто неактивна */ }
+}
+
+// ================= Экран загрузки =================
+
+function preloadAssets(onDone) {
+    const files = [];
+    SUSPECT_IMGS.forEach(f => files.push(ASSET_DIR + f));
+    ANIMALS.forEach(a => files.push(ASSET_DIR + 'detective-' + a.key + '.webp'));
+    CLUE_TYPES.forEach(ct => files.push(ASSET_DIR + 'item-' + ct.key + '.webp'));
+    ['fox-thief', 'burrow', 'pie', 'logo', 'icon-eye', 'icon-paw', 'icon-paw-double',
+     'icon-dice', 'icon-magnifier', 'clue-mushroom',
+     'decor-bush', 'decor-flower-pink', 'decor-flower-white', 'decor-grass', 'decor-stone']
+        .forEach(n => files.push(ASSET_DIR + n + '.webp'));
+    ['tex-grass', 'tex-path', 'tex-page-bg', 'tile-mystery'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
+
+    let loaded = 0;
+    const bar = $('loading-bar-fill');
+    const finish = () => { $('loading-screen').classList.add('hidden'); onDone(); };
+    const tick = () => {
+        loaded++;
+        if (bar) bar.style.width = Math.round(loaded / files.length * 100) + '%';
+        if (loaded >= files.length) finish();
+    };
+    files.forEach(src => {
+        const img = new Image();
+        img.onload = tick;
+        img.onerror = tick;
+        img.src = src;
+    });
+    setTimeout(finish, 8000); // страховка от зависания загрузки
 }
 
 // ================= Инициализация =================
@@ -607,18 +818,19 @@ document.addEventListener('DOMContentLoaded', () => {
     $('setup-modal-icon').innerHTML = pieImg(32);
     $('target-eye-icon').innerHTML = eyeIcon(30);
     $('target-paw-icon').innerHTML = pawIcon(26);
-    $('roll-open-btn').innerHTML = diceIconImg(20) + ' Бросить кубики';
-    $('check-clue-btn').innerHTML = magnifierImg(20) + ' Проверить улику';
     $('steps-icon').innerHTML = pawIcon(18);
+    $('loading-logo').innerHTML = logoImg(96);
 
-    buildClueChips();
-    updateDangerBadge();
+    applyStaticTexts();
+    Sound.preload();
+    document.addEventListener('pointerdown', () => Sound.unlock(), { once: true });
 
     // Выбор числа игроков
     const picker = $('player-count-picker');
     picker.querySelector('[data-count="1"]').classList.add('selected');
     picker.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
+            Sound.play('click', 0.5);
             picker.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             renderPlayerSetupRows(Number(btn.dataset.count));
@@ -626,7 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     $('start-game-btn').addEventListener('click', startGame);
-    $('setup-cancel-btn').addEventListener('click', closeModal);
+    $('setup-cancel-btn').addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
     $('new-game-btn').addEventListener('click', () => openSetupModal(state.players.length > 0));
     $('endgame-new-btn').addEventListener('click', () => openSetupModal(false));
 
@@ -644,9 +856,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Панель действий
-    $('check-clue-btn').addEventListener('click', openDecoderModal);
+    $('check-clue-btn').addEventListener('click', pickMushroom);
     $('end-turn-btn').addEventListener('click', endTurnManually);
     $('decoder-close-btn').addEventListener('click', closeDecoderModal);
+
+    // Настройки и правила
+    $('settings-btn').addEventListener('click', openSettings);
+    $('rules-btn').addEventListener('click', openRules);
+    $('settings-close-btn').addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
+    $('set-music-toggle').addEventListener('change', e => Sound.setMusic(e.target.checked));
+    $('set-sfx-toggle').addEventListener('change', e => Sound.setSfx(e.target.checked));
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        b.addEventListener('click', () => { Sound.play('click', 0.5); switchLang(b.dataset.lang); });
+    });
+    $('settings-rules-btn').addEventListener('click', openRules);
+    $('settings-tutorial-btn').addEventListener('click', () => {
+        Sound.play('click', 0.5);
+        localStorage.removeItem('dg_tut_done');
+        closeModal();
+        openSetupModal(false);
+    });
+    $('rules-prev').addEventListener('click', () => {
+        Sound.play('click', 0.5);
+        if (ruleIdx > 0) { ruleIdx--; renderRuleSlide(); }
+    });
+    $('rules-next').addEventListener('click', () => {
+        Sound.play('click', 0.5);
+        if (ruleIdx < RULE_SLIDES.length - 1) { ruleIdx++; renderRuleSlide(); }
+        else closeModal();
+    });
+
+    // Продолжение партии
+    $('resume-yes-btn').addEventListener('click', () => {
+        Sound.play('click', 0.5);
+        const data = loadSavedGame();
+        if (data) restoreGame(data);
+        else openSetupModal(false);
+    });
+    $('resume-no-btn').addEventListener('click', () => {
+        Sound.play('click', 0.5);
+        localStorage.removeItem('dg_save');
+        openSetupModal(false);
+    });
 
     // Клик по подложке закрывает только «отпускаемые» модалки
     $('modal-overlay').addEventListener('click', (e) => {
@@ -670,5 +921,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 500);
 
-    openSetupModal(false);
+    initDonation();
+
+    preloadAssets(() => {
+        const saved = loadSavedGame();
+        if (saved) openModal('modal-resume');
+        else openSetupModal(false);
+    });
 });

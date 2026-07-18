@@ -1,0 +1,17 @@
+{
+  "name": "detective-gang",
+  "version": "1.0.0",
+  "description": "Detective Gang — a cozy detective board game for kids",
+  "private": true,
+  "scripts": {
+    "build": "bash tools/build-www.sh",
+    "sync": "npm run build && npx cap sync android",
+    "open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
+    "cordova-plugin-purchase": "^13.18.0"
+  }
+}

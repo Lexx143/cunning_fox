@@ -1,2 +1,10 @@
 .DS_Store
 workday_tracking_guidelines.docx
+node_modules/
+www/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+keystore.properties
+*.keystore

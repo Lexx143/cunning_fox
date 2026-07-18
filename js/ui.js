@@ -10,10 +10,10 @@ const ASSET_DIR = 'assets/cut/';
 const ASSET_RAW = 'assets/';
 
 const SUSPECT_IMGS = [
-    'suspect-01-alisa.png', 'suspect-02-artur.png', 'suspect-03-beatris.png', 'suspect-04-charlz.png',
-    'suspect-05-deizi.png', 'suspect-06-edit.png', 'suspect-07-frank.png', 'suspect-08-gertruda.png',
-    'suspect-09-garold.png', 'suspect-10-ingrid.png', 'suspect-11-yustina.png', 'suspect-12-leo.png',
-    'suspect-13-meri.png', 'suspect-14-olivia.png', 'suspect-15-pol.png', 'suspect-16-sebastyan.png',
+    'suspect-01-alisa.webp', 'suspect-02-artur.webp', 'suspect-03-beatris.webp', 'suspect-04-charlz.webp',
+    'suspect-05-deizi.webp', 'suspect-06-edit.webp', 'suspect-07-frank.webp', 'suspect-08-gertruda.webp',
+    'suspect-09-garold.webp', 'suspect-10-ingrid.webp', 'suspect-11-yustina.webp', 'suspect-12-leo.webp',
+    'suspect-13-meri.webp', 'suspect-14-olivia.webp', 'suspect-15-pol.webp', 'suspect-16-sebastyan.webp',
 ];
 
 function assetImg(file, size, cls = '') {
@@ -21,45 +21,59 @@ function assetImg(file, size, cls = '') {
 }
 
 function suspectImg(i) {
-    return `<img class="portrait-img" src="${ASSET_DIR}${SUSPECT_IMGS[i]}" alt="${SUSPECTS[i].name}">`;
+    return `<img class="portrait-img" src="${ASSET_DIR}${SUSPECT_IMGS[i]}" alt="${suspectName(SUSPECTS[i])}">`;
 }
 
 function detectiveImg(key) {
-    return `<img class="detective-img" src="${ASSET_DIR}detective-${key}.png" alt="">`;
+    return `<img class="detective-img" src="${ASSET_DIR}detective-${key}.webp" alt="">`;
 }
 
 // Голова детектива, вырезанная из полноростовой иллюстрации (CSS-кроп)
 function detectiveHeadImg(key) {
-    return `<span class="head-crop"><img src="${ASSET_DIR}detective-${key}.png" alt=""></span>`;
+    return `<span class="head-crop"><img src="${ASSET_DIR}detective-${key}.webp" alt=""></span>`;
 }
 
 function itemImg(key, size) {
-    return `<img class="item-img" width="${size}" height="${size}" src="${ASSET_DIR}item-${key}.png" alt="">`;
+    return `<img class="item-img" width="${size}" height="${size}" src="${ASSET_DIR}item-${key}.webp" alt="">`;
 }
 
 // Сюжетные объекты и иконки
-function foxThiefImg(size) { return assetImg('fox-thief.png', size); }
-function burrowImg(size)   { return assetImg('burrow.png', size); }
-function pieImg(size)      { return assetImg('pie.png', size); }
-function logoImg(size)     { return assetImg('logo.png', size); }
-function eyeIcon(size)     { return assetImg('icon-eye.png', size); }
-function pawIcon(size)     { return assetImg('icon-paw.png', size); }
-function diceIconImg(size) { return assetImg('icon-dice.png', size); }
-function magnifierImg(size){ return assetImg('icon-magnifier.png', size); }
+function foxThiefImg(size) { return assetImg('fox-thief.webp', size); }
+function burrowImg(size)   { return assetImg('burrow.webp', size); }
+function pieImg(size)      { return assetImg('pie.webp', size); }
+function logoImg(size)     { return assetImg('logo.webp', size); }
+function eyeIcon(size)     { return assetImg('icon-eye.webp', size); }
+function pawIcon(size)     { return assetImg('icon-paw.webp', size); }
+function diceIconImg(size) { return assetImg('icon-dice.webp', size); }
+function magnifierImg(size){ return assetImg('icon-magnifier.webp', size); }
+function mushroomImg(size) { return assetImg('clue-mushroom.webp', size); }
 
 function decorImg(type, size) {
-    return assetImg('decor-' + type + '.png', size);
-}
-
-function clueMarkerImg(kind, size) {
-    return assetImg(kind === 'mushroom' ? 'clue-mushroom.png' : 'clue-berries.png', size);
+    return assetImg('decor-' + type + '.webp', size);
 }
 
 // Иконка грани кубика
 function diceFaceIcon(icon) {
     if (icon === 'eye') return eyeIcon(34);
     if (icon === 'paw') return pawIcon(30);
-    return assetImg('icon-paw-double.png', 44);
+    return assetImg('icon-paw-double.webp', 44);
+}
+
+// ======================================================================
+//  СТАТИЧНЫЕ ТЕКСТЫ (i18n)
+// ======================================================================
+
+function applyStaticTexts() {
+    document.title = t('app_title');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    $('roll-open-btn').innerHTML = diceIconImg(20) + ' ' + t('btn_roll_open');
+    $('check-clue-btn').innerHTML = mushroomImg(20) + ' ' + t('btn_check_clue');
+    document.querySelector('.target-btn[data-target="eyes"] .target-name').textContent = t('target_eyes');
+    document.querySelector('.target-btn[data-target="eyes"] small').textContent = t('target_eyes_sub');
+    document.querySelector('.target-btn[data-target="clues"] .target-name').textContent = t('target_paws');
+    document.querySelector('.target-btn[data-target="clues"] small').textContent = t('target_paws_sub');
 }
 
 // ======================================================================
@@ -83,28 +97,30 @@ function buildClueChips() {
         const chip = document.createElement('span');
         chip.className = 'clue-chip';
         chip.id = 'chip-' + ct.key;
-        chip.title = ct.label + ': не проверено';
         chip.innerHTML = `${itemImg(ct.key, 18)}<span class="chip-mark">·</span>`;
         wrap.appendChild(chip);
     });
+    updateClueChips();
 }
 
 function updateClueChips() {
     CLUE_TYPES.forEach(ct => {
         const chip = $('chip-' + ct.key);
+        if (!chip) return;
         chip.classList.remove('chip-yes', 'chip-no');
         const mark = chip.querySelector('.chip-mark');
+        const label = t('clue_' + ct.key);
         if (!(ct.key in state.checked)) {
             mark.textContent = '·';
-            chip.title = ct.label + ': не проверено';
+            chip.title = t('chip_unknown', { label });
         } else if (state.checked[ct.key]) {
             chip.classList.add('chip-yes');
             mark.textContent = '✓';
-            chip.title = ct.label + ': есть у вора';
+            chip.title = t('chip_yes', { label });
         } else {
             chip.classList.add('chip-no');
             mark.textContent = '✗';
-            chip.title = ct.label + ': нет у вора';
+            chip.title = t('chip_no', { label });
         }
     });
 }
@@ -122,21 +138,86 @@ function buildBoard() {
         for (let x = 0; x < GRID_SIZE; x++) {
             const cell = document.createElement('div');
             cell.className = 'board-cell';
-            // лёгкая шахматка травы
-            if ((x + y) % 2 === 1) cell.classList.add('grass-b');
-            if (isCentralArea(x, y)) cell.classList.add('cell-clearing');
-            if (isFoxPathCell(x, y)) cell.classList.add('cell-path');
             if (x === burrow.x && y === burrow.y) cell.classList.add('cell-burrow');
             cell.dataset.x = x;
             cell.dataset.y = y;
             board.appendChild(cell);
         }
     }
+    buildTrailSVG();
     updateBoardCells();
 }
 
 function cellAt(x, y) {
     return $('board-grid').children[y * GRID_SIZE + x];
+}
+
+// ---------- Плавная тропа лиса (Catmull-Rom → Bezier) ----------
+let TRAIL_LENGTHS = null; // накопленные длины полилайна до каждой точки тропы
+
+function trailPoints() {
+    // центры клеток тропы в координатах viewBox 0..100
+    return FOX_PATH.map(p => [
+        (p.x + 0.5) / GRID_SIZE * 100,
+        (p.y + 0.5) / GRID_SIZE * 100,
+    ]);
+}
+
+function trailPathD() {
+    const pts = trailPoints();
+    let d = `M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(pts.length - 1, i + 2)];
+        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += ` C ${c1[0].toFixed(2)} ${c1[1].toFixed(2)}, ${c2[0].toFixed(2)} ${c2[1].toFixed(2)}, ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
+    }
+    return d;
+}
+
+function buildTrailSVG() {
+    const old = $('trail-svg');
+    if (old) old.remove();
+    const d = trailPathD();
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.id = 'trail-svg';
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.innerHTML = `
+        <defs>
+            <pattern id="trail-tex" patternUnits="userSpaceOnUse" width="14" height="14">
+                <image href="${ASSET_RAW}tex-path.webp" x="0" y="0" width="14" height="14"/>
+            </pattern>
+        </defs>
+        <path d="${d}" fill="none" stroke="#8a6a45" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+        <path d="${d}" fill="none" stroke="url(#trail-tex)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="trail-passed" d="${d}" fill="none" stroke="rgba(80,55,30,0.3)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+    `;
+    const wrap = $('board-wrap');
+    wrap.insertBefore(svg, $('pawn-layer'));
+
+    // приблизительные длины кривой до каждой точки (по полилайну)
+    const pts = trailPoints();
+    TRAIL_LENGTHS = [0];
+    for (let i = 1; i < pts.length; i++) {
+        const dx = pts[i][0] - pts[i - 1][0];
+        const dy = pts[i][1] - pts[i - 1][1];
+        TRAIL_LENGTHS[i] = TRAIL_LENGTHS[i - 1] + Math.hypot(dx, dy);
+    }
+    updateTrailProgress();
+}
+
+function updateTrailProgress() {
+    const passed = $('trail-passed');
+    if (!passed || !TRAIL_LENGTHS) return;
+    const total = passed.getTotalLength();
+    const frac = TRAIL_LENGTHS[Math.min(state.fox, TRAIL_LENGTHS.length - 1)] / TRAIL_LENGTHS[TRAIL_LENGTHS.length - 1];
+    const passedLen = total * frac;
+    passed.setAttribute('stroke-dasharray', `${passedLen} ${total}`);
 }
 
 function updateBoardCells() {
@@ -150,11 +231,11 @@ function updateBoardCells() {
         }
         const clue = state.clues.find(c => c.x === x && c.y === y);
         if (clue) {
-            cell.innerHTML = `<span class="cell-art art-clue">${clueMarkerImg(clue.kind, 32)}</span>`;
+            cell.innerHTML = `<span class="cell-art art-clue">${mushroomImg(32)}</span>`;
             continue;
         }
         const decor = state.decor.find(d => d.x === x && d.y === y);
-        cell.innerHTML = decor ? `<span class="cell-art art-decor">${decorImg(decor.t, 28)}</span>` : '';
+        cell.innerHTML = decor ? `<span class="cell-art art-decor">${decorImg(decor.t, 26)}</span>` : '';
     }
 }
 
@@ -173,22 +254,23 @@ function updateReachable() {
     }
 }
 
-// ---------- Фишки сыщиков и лис на поле ----------
+// ---------- Фигурки сыщиков и лис на поле ----------
 function buildPawns() {
     const layer = $('pawn-layer');
     layer.innerHTML = '';
     state.players.forEach((pl, i) => {
         const pawn = document.createElement('div');
-        pawn.className = 'pawn';
+        pawn.className = 'pawn-figure';
         pawn.id = 'pawn-' + i;
-        pawn.style.borderColor = pl.color;
-        pawn.innerHTML = detectiveHeadImg(pl.animal);
+        pawn.innerHTML = `
+            <span class="pawn-base" style="background:${pl.color}"></span>
+            <img src="${ASSET_DIR}detective-${pl.animal}.webp" alt="">`;
         layer.appendChild(pawn);
     });
     const fox = document.createElement('div');
     fox.className = 'fox-token';
     fox.id = 'fox-token';
-    fox.innerHTML = `<img src="${ASSET_DIR}fox-thief.png" alt="">`;
+    fox.innerHTML = `<img src="${ASSET_DIR}fox-thief.webp" alt="">`;
     layer.appendChild(fox);
     positionPawns();
 }
@@ -197,9 +279,9 @@ function positionPawns() {
     if (!state.players.length) return;
     const boardW = $('board-grid').clientWidth;
     const cell = boardW / GRID_SIZE;
-    const size = cell * 0.84;
+    const size = cell * 1.7; // высота фигурки
 
-    // группируем по клеткам, чтобы разводить фишки на одной клетке
+    // группируем по клеткам, чтобы разводить фигурки на одной клетке
     const groups = {};
     state.players.forEach((pl, i) => {
         const key = pl.pos.x + ',' + pl.pos.y;
@@ -215,13 +297,15 @@ function positionPawns() {
         let ox = 0, oy = 0;
         if (mates.length > 1) {
             const slot = mates.indexOf(i);
-            const offs = [[-0.16, -0.16], [0.16, -0.16], [-0.16, 0.16], [0.16, 0.16]];
+            const offs = [[-0.22, -0.1], [0.22, -0.1], [-0.22, 0.14], [0.22, 0.14]];
             ox = offs[slot][0] * cell;
             oy = offs[slot][1] * cell;
         }
+        // якорь: ноги фигурки чуть ниже центра клетки
         const cx = pl.pos.x * cell + cell / 2 + ox - size / 2;
-        const cy = pl.pos.y * cell + cell / 2 + oy - size / 2;
+        const cy = pl.pos.y * cell + cell * 0.72 + oy - size;
         pawn.style.transform = `translate(${cx}px, ${cy}px)`;
+        pawn.style.zIndex = 10 + pl.pos.y;
         pawn.classList.toggle('active-pawn', i === state.current && state.players.length > 1);
     });
 
@@ -232,20 +316,17 @@ function positionFoxToken(cellSize) {
     const fox = $('fox-token');
     if (!fox) return;
     const cell = cellSize || $('board-grid').clientWidth / GRID_SIZE;
-    const size = cell * 1.35;
+    const size = cell * 1.6;
     const pos = FOX_PATH[Math.min(state.fox, FOX_PATH.length - 1)];
     fox.style.width = size + 'px';
     fox.style.height = size + 'px';
     const cx = pos.x * cell + cell / 2 - size / 2;
-    const cy = pos.y * cell + cell / 2 - size / 2;
+    const cy = pos.y * cell + cell * 0.75 - size;
     fox.style.transform = `translate(${cx}px, ${cy}px)`;
+    fox.style.zIndex = 9 + pos.y;
     fox.classList.toggle('in-burrow', state.fox >= FOX_TRACK_LENGTH);
 
-    // пройденные клетки тропы затемняем
-    FOX_PATH.forEach((p, idx) => {
-        const cellEl = cellAt(p.x, p.y);
-        if (cellEl) cellEl.classList.toggle('path-passed', idx < state.fox);
-    });
+    updateTrailProgress();
 }
 
 // ---------- Карты подозреваемых ----------
@@ -262,7 +343,7 @@ function buildSuspectCards() {
                 <div class="card-face card-back"></div>
                 <div class="card-face card-front">
                     ${suspectImg(i)}
-                    <span class="card-name">${s.name}</span>
+                    <span class="card-name">${suspectName(s)}</span>
                     <span class="card-attrs">${suspectAttrIcons(s, 14)}</span>
                     <span class="stamp hidden"></span>
                 </div>
@@ -275,7 +356,7 @@ function buildSuspectCards() {
 
 function suspectAttrIcons(s, size) {
     const icons = CLUE_TYPES.filter(ct => s[ct.key]).map(ct => itemImg(ct.key, size)).join('');
-    return icons || '<span class="no-attrs">без примет</span>';
+    return icons || `<span class="no-attrs">${t('no_attrs_full')}</span>`;
 }
 
 function updateSuspectCard(i) {
@@ -290,7 +371,7 @@ function updateSuspectCard(i) {
     const stamp = card.querySelector('.stamp');
     if (s.isReleased) {
         stamp.className = 'stamp stamp-released';
-        stamp.textContent = 'СВОБОДЕН';
+        stamp.textContent = t('stamp_released');
     } else {
         stamp.className = 'stamp hidden';
     }
@@ -334,8 +415,7 @@ function updateActionButtons() {
     $('steps-left').textContent = state.steps;
 
     const onClue = state.phase === 'moving' && playerOnClue();
-    const cluesRemain = Object.keys(state.checked).length < CLUE_TYPES.length;
-    checkBtn.classList.toggle('hidden', !(onClue && cluesRemain));
+    checkBtn.classList.toggle('hidden', !onClue);
 }
 
 // ---------- Кубики ----------

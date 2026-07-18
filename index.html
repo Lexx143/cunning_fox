@@ -3,20 +3,33 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f7e8cf">
     <title>Детективная братва</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
+    <div id="loading-screen">
+        <span id="loading-logo"></span>
+        <div class="loading-bar"><div id="loading-bar-fill"></div></div>
+        <p data-i18n="loading"></p>
+    </div>
+
     <header class="header">
         <div class="header-row">
-            <h1 class="game-title"><span class="title-icon" id="title-icon"></span>Детективная братва</h1>
-            <div class="fox-danger level-safe" id="fox-danger" title="Сколько шагов лису осталось до норы">
+            <h1 class="game-title"><span class="title-icon" id="title-icon"></span><span data-i18n="app_title"></span></h1>
+            <div class="fox-danger level-safe" id="fox-danger">
                 <span class="fox-danger-icon" id="fox-danger-icon"></span>
-                <span>До норы: <b id="danger-count">16</b></span>
+                <span><span data-i18n="danger_label"></span> <b id="danger-count">16</b></span>
             </div>
-            <button id="new-game-btn" class="btn btn-primary">Новое дело</button>
+            <div class="header-btns">
+                <button id="rules-btn" class="icon-btn" type="button">?</button>
+                <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+                </button>
+                <button id="new-game-btn" class="btn btn-primary" data-i18n="btn_new_game"></button>
+            </div>
         </div>
         <div class="clue-chips" id="clue-chips"></div>
     </header>
@@ -37,17 +50,17 @@
         <div class="status" id="status-text"></div>
         <div class="action-buttons">
             <span class="steps-badge hidden" id="steps-badge"><span class="steps-icon" id="steps-icon"></span><b id="steps-left">0</b></span>
-            <button id="roll-open-btn" class="btn btn-primary hidden">Бросить кубики</button>
-            <button id="check-clue-btn" class="btn btn-accent hidden">Проверить улику</button>
-            <button id="end-turn-btn" class="btn btn-secondary hidden">Завершить ход</button>
+            <button id="roll-open-btn" class="btn btn-primary hidden"></button>
+            <button id="check-clue-btn" class="btn btn-accent hidden"></button>
+            <button id="end-turn-btn" class="btn btn-secondary hidden" data-i18n="btn_end_turn"></button>
         </div>
     </footer>
 
     <div class="modal-overlay hidden" id="modal-overlay">
 
         <div class="modal hidden" id="modal-setup" data-dismiss="false">
-            <h2><span class="modal-icon" id="setup-modal-icon"></span>Новое дело</h2>
-            <p class="modal-sub">Лис-воришка стащил пирог! Кто ведёт расследование?</p>
+            <h2><span class="modal-icon" id="setup-modal-icon"></span><span data-i18n="setup_title"></span></h2>
+            <p class="modal-sub" data-i18n="setup_sub"></p>
             <div class="count-picker" id="player-count-picker">
                 <button type="button" data-count="1">1</button>
                 <button type="button" data-count="2">2</button>
@@ -56,23 +69,23 @@
             </div>
             <div class="player-names" id="player-names"></div>
             <div class="modal-actions">
-                <button class="btn btn-secondary hidden" id="setup-cancel-btn">Отмена</button>
-                <button class="btn btn-primary" id="start-game-btn">Начать расследование</button>
+                <button class="btn btn-secondary hidden" id="setup-cancel-btn" data-i18n="btn_cancel"></button>
+                <button class="btn btn-primary" id="start-game-btn" data-i18n="btn_start"></button>
             </div>
         </div>
 
         <div class="modal hidden" id="modal-dice" data-dismiss="false">
-            <h2><span class="modal-icon" id="dice-modal-icon"></span>Бросок кубиков</h2>
+            <h2><span class="modal-icon" id="dice-modal-icon"></span><span data-i18n="dice_title"></span></h2>
             <div class="target-picker" id="target-picker">
                 <button type="button" class="target-btn" data-target="eyes">
                     <span class="target-icon" id="target-eye-icon"></span>
-                    <span class="target-name">Глаза</span>
-                    <small>открыть 2 карты</small>
+                    <span class="target-name"></span>
+                    <small></small>
                 </button>
                 <button type="button" class="target-btn" data-target="clues">
                     <span class="target-icon" id="target-paw-icon"></span>
-                    <span class="target-name">Следы</span>
-                    <small>ходить по полю</small>
+                    <span class="target-name"></span>
+                    <small></small>
                 </button>
             </div>
             <div class="dice-row">
@@ -82,18 +95,17 @@
             </div>
             <p class="dice-hint" id="dice-hint"></p>
             <div class="modal-actions dice-actions">
-                <span class="rolls-left">Броски: <b id="rolls-left">3</b></span>
-                <button class="btn btn-primary" id="roll-btn">Бросить!</button>
+                <span class="rolls-left"><span data-i18n="rolls_label"></span> <b id="rolls-left">3</b></span>
+                <button class="btn btn-primary" id="roll-btn"></button>
             </div>
         </div>
 
         <div class="modal hidden" id="modal-decoder" data-dismiss="true">
-            <h2><span class="modal-icon" id="decoder-modal-icon"></span>Дешифратор улик</h2>
-            <p class="modal-sub" id="decoder-sub">Выберите примету для проверки:</p>
-            <div class="clue-grid" id="decoder-clues"></div>
-            <p class="decoder-result" id="decoder-result"></p>
+            <h2><span class="modal-icon" id="decoder-modal-icon"></span><span data-i18n="decoder_title"></span></h2>
+            <p class="modal-sub" data-i18n="decoder_sub"></p>
+            <div id="decoder-box"></div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" id="decoder-close-btn">Закрыть</button>
+                <button class="btn btn-primary" id="decoder-close-btn" data-i18n="btn_ok"></button>
             </div>
         </div>
 
@@ -106,22 +118,73 @@
             <h2 id="confirm-title"></h2>
             <p class="modal-sub" id="confirm-text"></p>
             <div class="modal-actions">
-                <button class="btn btn-secondary" id="confirm-no-btn">Отмена</button>
-                <button class="btn btn-danger" id="confirm-yes-btn">Да</button>
+                <button class="btn btn-secondary" id="confirm-no-btn" data-i18n="btn_cancel"></button>
+                <button class="btn btn-danger" id="confirm-yes-btn" data-i18n="btn_yes"></button>
             </div>
         </div>
 
         <div class="modal hidden" id="modal-endgame" data-dismiss="false">
             <div id="endgame-content"></div>
             <div class="modal-actions">
-                <button class="btn btn-primary" id="endgame-new-btn">Новое дело</button>
+                <button class="btn btn-primary" id="endgame-new-btn" data-i18n="btn_new_game"></button>
+            </div>
+        </div>
+
+        <div class="modal hidden" id="modal-settings" data-dismiss="true">
+            <h2 data-i18n="settings_title"></h2>
+            <div class="settings-list">
+                <label class="settings-row">
+                    <span data-i18n="set_music"></span>
+                    <input type="checkbox" id="set-music-toggle" class="toggle">
+                </label>
+                <label class="settings-row">
+                    <span data-i18n="set_sfx"></span>
+                    <input type="checkbox" id="set-sfx-toggle" class="toggle">
+                </label>
+                <div class="settings-row">
+                    <span data-i18n="set_lang"></span>
+                    <span class="lang-switch">
+                        <button type="button" class="lang-btn" data-lang="ru">РУС</button>
+                        <button type="button" class="lang-btn" data-lang="en">ENG</button>
+                    </span>
+                </div>
+                <button class="btn btn-secondary settings-wide" id="settings-rules-btn" data-i18n="set_rules"></button>
+                <button class="btn btn-secondary settings-wide" id="settings-tutorial-btn" data-i18n="set_tutorial"></button>
+                <div id="donate-row" class="hidden">
+                    <button class="btn btn-accent settings-wide" id="donate-btn" data-i18n="set_donate"></button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="settings-close-btn" data-i18n="btn_close"></button>
+            </div>
+        </div>
+
+        <div class="modal hidden" id="modal-rules" data-dismiss="true">
+            <h2 data-i18n="rules_title"></h2>
+            <div id="rules-slide"></div>
+            <div id="rules-dots"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="rules-prev">←</button>
+                <button class="btn btn-primary" id="rules-next">→</button>
+            </div>
+        </div>
+
+        <div class="modal hidden" id="modal-resume" data-dismiss="false">
+            <h2 data-i18n="resume_title"></h2>
+            <p class="modal-sub" data-i18n="resume_text"></p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="resume-no-btn" data-i18n="btn_new"></button>
+                <button class="btn btn-primary" id="resume-yes-btn" data-i18n="btn_resume"></button>
             </div>
         </div>
 
     </div>
 
+    <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/sound.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/tutorial.js"></script>
     <script src="js/game.js"></script>
 </body>
 
