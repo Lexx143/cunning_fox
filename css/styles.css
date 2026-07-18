@@ -182,22 +182,31 @@ img { -webkit-user-drag: none; }
     50% { box-shadow: 0 0 0 5px rgba(217, 83, 79, 0.3); }
 }
 
-/* Чипы улик */
-.clue-chips {
+/* Улики (3 в ряд) + «До норы» на одном уровне */
+.info-row {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
     flex-wrap: wrap;
-    gap: 8px;
+}
+.clue-chips {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    gap: 5px 6px;
 }
 .clue-chip {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
-    padding: 4px 10px;
+    padding: 3px 9px;
     border-radius: 999px;
     background: var(--panel);
     border: 2px solid rgba(74, 50, 38, 0.15);
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: var(--ink-soft);
     box-shadow: var(--shadow-sm);
@@ -208,35 +217,48 @@ img { -webkit-user-drag: none; }
 .clue-chip.chip-no svg,
 .clue-chip.chip-no img { filter: grayscale(1); opacity: 0.55; }
 
-/* ================= Вкладки и экраны ================= */
+/* ================= Нижняя навигация и экраны ================= */
 .screen-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
     display: flex;
-    justify-content: center;
     gap: 8px;
-    margin-top: 8px;
+    padding: 7px 10px calc(7px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 250, 240, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 2px solid rgba(74, 50, 38, 0.12);
+    box-shadow: 0 -4px 16px rgba(74, 50, 38, 0.1);
 }
 .tab {
+    flex: 1;
     font-family: inherit;
     font-weight: 800;
     font-size: 1rem;
-    padding: 8px 22px;
-    border-radius: 14px 14px 0 0;
-    border: 2.5px solid rgba(74, 50, 38, 0.18);
-    border-bottom: none;
-    background: rgba(255, 250, 240, 0.6);
+    padding: 9px 8px;
+    border-radius: 14px;
+    border: none;
+    background: transparent;
     color: var(--ink-soft);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    transition: background 0.15s;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
 }
+.tab .tab-ico { display: inline-flex; }
+.tab .tab-ico img { width: 26px; height: 26px; object-fit: contain; filter: grayscale(0.6) opacity(0.7); }
 .tab.selected {
-    background: var(--panel);
+    background: #ffedd8;
     color: var(--ink);
-    border-color: var(--accent);
-    box-shadow: 0 -3px 8px rgba(74, 50, 38, 0.08);
+    box-shadow: inset 0 0 0 2.5px var(--accent);
 }
+.tab.selected .tab-ico img { filter: none; }
 .tab-badge {
     min-width: 22px;
     height: 22px;

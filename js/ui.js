@@ -378,7 +378,8 @@ function updateSuspectsBadge() {
 function fitScreens() {
     applyLayoutMode();
     const top = $('app-header').offsetHeight;
-    const avail = Math.max(300, window.innerHeight - top - 26);
+    const tabsH = isSplitLayout() ? 0 : $('screen-tabs').offsetHeight;
+    const avail = Math.max(300, window.innerHeight - top - tabsH - 22);
     const sg = $('suspects-grid');
     const gap = 10;
 

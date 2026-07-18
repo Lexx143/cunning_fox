@@ -2,20 +2,21 @@
 // SFX: CC0-паки Kenney (assets/sfx/CREDITS.txt)
 
 const Sound = (() => {
+    // файл + базовая громкость (звуки смягчены, чтобы не резали слух)
     const SFX_FILES = {
-        click:      'click.wav',
-        diceShake:  'dice-shake.ogg',
-        diceThrow:  'dice-throw.ogg',
-        cardFlip:   'card-flip.ogg',
-        cardDeal:   'card-deal.ogg',
-        step:       'step.ogg',
-        foxRun:     'fox-run.ogg',
-        clue:       'clue.ogg',
-        success:    'success.ogg',
-        fail:       'fail.ogg',
-        wrong:      'wrong.ogg',
-        win:        'win.ogg',
-        lose:       'lose.ogg',
+        click:      ['click.wav', 0.35],
+        diceShake:  ['dice-shake.ogg', 0.45],
+        diceThrow:  ['dice-throw.ogg', 0.5],
+        cardFlip:   ['card-flip.ogg', 0.45],
+        cardDeal:   ['card-deal.ogg', 0.5],
+        step:       ['step.ogg', 0.35],
+        foxRun:     ['fox-run.ogg', 0.5],
+        clue:       ['clue.ogg', 0.5],
+        success:    ['success.ogg', 0.5],
+        fail:       ['fail.ogg', 0.5],
+        wrong:      ['wrong.ogg', 0.5],
+        win:        ['win.ogg', 0.65],
+        lose:       ['lose.ogg', 0.6],
     };
     const MUSIC_FILE = 'assets/music/theme.mp3';
 
@@ -28,7 +29,7 @@ const Sound = (() => {
 
     // предзагрузка через HTMLAudio-пул (просто и достаточно для коротких эффектов)
     function preload() {
-        for (const [name, file] of Object.entries(SFX_FILES)) {
+        for (const [name, [file]] of Object.entries(SFX_FILES)) {
             const a = new Audio('assets/sfx/' + file);
             a.preload = 'auto';
             buffers[name] = a;
@@ -41,11 +42,11 @@ const Sound = (() => {
         musicEl.addEventListener('error', () => { musicAvailable = false; });
     }
 
-    function play(name, volume = 1) {
+    function play(name, mult = 1) {
         if (!sfxOn || !buffers[name]) return;
         try {
             const a = buffers[name].cloneNode();
-            a.volume = volume;
+            a.volume = Math.min(1, SFX_FILES[name][1] * mult);
             a.play().catch(() => {});
         } catch (e) { /* без звука лучше, чем с ошибкой */ }
     }

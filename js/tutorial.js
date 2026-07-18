@@ -51,7 +51,7 @@ const Tutorial = (() => {
         overlay.querySelector('.tut-fox').innerHTML = logoImg(52);
         document.getElementById('tut-skip').addEventListener('click', finish);
         document.getElementById('tut-next').addEventListener('click', () => {
-            Sound.play('click', 0.5);
+            Sound.play('click');
             const step = SCRIPT[stepIdx];
             if (!step) return;
             if (step.advance === 'finish') finish();

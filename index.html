@@ -19,10 +19,6 @@
     <header class="header" id="app-header">
         <div class="header-row">
             <h1 class="game-title"><span class="title-icon" id="title-icon"></span><span data-i18n="app_title"></span></h1>
-            <div class="fox-danger level-safe" id="fox-danger">
-                <span class="fox-danger-icon" id="fox-danger-icon"></span>
-                <span><span data-i18n="danger_label"></span> <b id="danger-count">16</b></span>
-            </div>
             <div class="header-btns">
                 <button id="rules-btn" class="icon-btn" type="button">?</button>
                 <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">
@@ -31,7 +27,13 @@
                 <button id="new-game-btn" class="btn btn-primary" data-i18n="btn_new_game"></button>
             </div>
         </div>
-        <div class="clue-chips" id="clue-chips"></div>
+        <div class="info-row">
+            <div class="clue-chips" id="clue-chips"></div>
+            <div class="fox-danger level-safe" id="fox-danger">
+                <span class="fox-danger-icon" id="fox-danger-icon"></span>
+                <span><span data-i18n="danger_label"></span> <b id="danger-count">16</b></span>
+            </div>
+        </div>
         <div class="action-row">
             <div class="players-strip" id="players-strip"></div>
             <div class="status" id="status-text"></div>
@@ -42,14 +44,19 @@
                 <button id="end-turn-btn" class="btn btn-secondary hidden" data-i18n="btn_end_turn"></button>
             </div>
         </div>
-        <nav class="screen-tabs">
-            <button type="button" id="tab-board" class="tab selected" data-i18n="tab_board"></button>
-            <button type="button" id="tab-suspects" class="tab">
-                <span data-i18n="tab_suspects"></span>
-                <span id="tab-suspects-badge" class="tab-badge hidden"></span>
-            </button>
-        </nav>
     </header>
+
+    <nav class="screen-tabs" id="screen-tabs">
+        <button type="button" id="tab-board" class="tab selected">
+            <span class="tab-ico" id="tab-board-ico"></span>
+            <span data-i18n="tab_board"></span>
+        </button>
+        <button type="button" id="tab-suspects" class="tab">
+            <span class="tab-ico" id="tab-suspects-ico"></span>
+            <span data-i18n="tab_suspects"></span>
+            <span id="tab-suspects-badge" class="tab-badge hidden"></span>
+        </button>
+    </nav>
 
     <main class="screens">
         <section id="screen-board" class="screen">

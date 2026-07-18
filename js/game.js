@@ -140,7 +140,7 @@ function renderPlayerSetupRows(count) {
             btn.title = animalName(animal.key);
             btn.innerHTML = detectiveImg(animal.key);
             btn.addEventListener('click', () => {
-                Sound.play('click', 0.5);
+                Sound.play('click');
                 setupAnimals[i] = ai;
                 refreshSetupPickers(count);
             });
@@ -163,7 +163,7 @@ function renderPlayerSetupRows(count) {
                     setupColors[takenBy] = setupColors[i];
                 }
                 setupColors[i] = ci;
-                Sound.play('click', 0.5);
+                Sound.play('click');
                 refreshSetupPickers(count);
             });
             colors.appendChild(btn);
@@ -307,7 +307,7 @@ function nextPlayer() {
 
 function endTurnManually() {
     if (state.phase !== 'moving') return;
-    Sound.play('click', 0.5);
+    Sound.play('click');
     nextPlayer();
 }
 
@@ -351,7 +351,7 @@ function revealSuspect(i) {
 
 function openDiceModal() {
     if (state.phase !== 'rolling') return;
-    Sound.play('click', 0.5);
+    Sound.play('click');
     state.rollsLeft = 3;
     state.target = null;
     state.dice = [null, null, null];
@@ -392,7 +392,7 @@ function updateTargetPickerUI() {
 
 function selectTarget(tg) {
     if (state.target !== null) return; // после первого броска цель зафиксирована
-    Sound.play('click', 0.5);
+    Sound.play('click');
     state.uiTarget = tg;
     updateTargetPickerUI();
 }
@@ -522,7 +522,7 @@ function onCellClick(x, y) {
 
     p.pos = { x, y };
     state.steps -= dist;
-    Sound.play('step', 0.7);
+    Sound.play('step');
     positionPawns();
     updateReachable();
     updateActionButtons();
@@ -531,7 +531,7 @@ function onCellClick(x, y) {
     const onClue = playerOnClue();
 
     if (onClue) {
-        Sound.play('clue', 0.8);
+        Sound.play('clue');
         setStatus(state.steps > 0 ? t('status_clue_found_move') : t('status_clue_found_end'), 'good');
         Tutorial.notify('reachedClue');
     } else if (state.steps === 0) {
@@ -576,7 +576,7 @@ function pickMushroom() {
     [mag, verdict, txt].forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
 
     openModal('modal-decoder');
-    Sound.play('clue', 0.7);
+    Sound.play('clue');
     const token = state.turnId;
     setTimeout(() => {
         if (token !== state.turnId) return;
@@ -591,7 +591,7 @@ function pickMushroom() {
 }
 
 function closeDecoderModal() {
-    Sound.play('click', 0.5);
+    Sound.play('click');
     closeModal();
     if (state.phase !== 'moving') return;
     if (state.steps === 0) {
@@ -611,7 +611,7 @@ function closeDecoderModal() {
 function openDossier(i) {
     if (state.phase === 'gameover') return;
     const s = SUSPECTS[i];
-    Sound.play('cardFlip', 0.6);
+    Sound.play('cardFlip');
 
     const attrs = CLUE_TYPES.filter(ct => s[ct.key])
         .map(ct => `<span class="dossier-attr">${itemImg(ct.key, 20)} ${t('clue_' + ct.key)}</span>`)
@@ -646,7 +646,7 @@ function openDossier(i) {
     const closeBtn = document.createElement('button');
     closeBtn.className = 'btn';
     closeBtn.textContent = t('btn_close');
-    closeBtn.addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
+    closeBtn.addEventListener('click', () => { Sound.play('click'); closeModal(); });
     actions.appendChild(closeBtn);
 
     openModal('modal-dossier');
@@ -655,14 +655,14 @@ function openDossier(i) {
 function releaseSuspect(i) {
     SUSPECTS[i].isReleased = true;
     updateSuspectCard(i);
-    Sound.play('cardDeal', 0.7);
+    Sound.play('cardDeal');
     closeModal();
     saveGame();
 }
 
 function confirmAccuse(i) {
     const s = SUSPECTS[i];
-    Sound.play('click', 0.5);
+    Sound.play('click');
     $('confirm-title').textContent = t('confirm_accuse_title', { name: suspectName(s) });
     $('confirm-text').textContent = t('confirm_accuse_text');
     $('confirm-yes-btn').onclick = () => resolveAccuse(i);
@@ -698,7 +698,7 @@ function resolveAccuse(i) {
 
 function moveFox(n) {
     state.fox = Math.min(FOX_TRACK_LENGTH, state.fox + n);
-    Sound.play('foxRun', 0.8);
+    Sound.play('foxRun');
     positionFoxToken();
     updateDangerBadge();
     if (state.fox >= FOX_TRACK_LENGTH) endGame(false);
@@ -741,7 +741,7 @@ function endGame(isWin) {
 // ================= Настройки и правила =================
 
 function openSettings() {
-    Sound.play('click', 0.5);
+    Sound.play('click');
     $('set-music-toggle').checked = Sound.musicOn;
     $('set-sfx-toggle').checked = Sound.sfxOn;
     document.querySelectorAll('.lang-btn').forEach(b => {
@@ -775,7 +775,7 @@ const RULE_SLIDES = [1, 2, 3, 4, 5, 6].map(n => ({
 let ruleIdx = 0;
 
 function openRules() {
-    Sound.play('click', 0.5);
+    Sound.play('click');
     ruleIdx = 0;
     renderRuleSlide();
     openModal('modal-rules');
@@ -852,6 +852,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('target-paw-icon').innerHTML = pawIcon(26);
     $('steps-icon').innerHTML = pawIcon(18);
     $('loading-logo').innerHTML = logoImg(96);
+    $('tab-board-ico').innerHTML = pawIcon(26);
+    $('tab-suspects-ico').innerHTML = logoImg(26);
 
     applyStaticTexts();
     Sound.preload();
@@ -862,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
     picker.querySelector('[data-count="1"]').classList.add('selected');
     picker.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
-            Sound.play('click', 0.5);
+            Sound.play('click');
             picker.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             renderPlayerSetupRows(Number(btn.dataset.count));
@@ -870,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     $('start-game-btn').addEventListener('click', startGame);
-    $('setup-cancel-btn').addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
+    $('setup-cancel-btn').addEventListener('click', () => { Sound.play('click'); closeModal(); });
     $('new-game-btn').addEventListener('click', () => openSetupModal(state.players.length > 0));
     $('endgame-new-btn').addEventListener('click', () => openSetupModal(false));
 
@@ -895,38 +897,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Настройки и правила
     $('settings-btn').addEventListener('click', openSettings);
     $('rules-btn').addEventListener('click', openRules);
-    $('settings-close-btn').addEventListener('click', () => { Sound.play('click', 0.5); closeModal(); });
+    $('settings-close-btn').addEventListener('click', () => { Sound.play('click'); closeModal(); });
     $('set-music-toggle').addEventListener('change', e => Sound.setMusic(e.target.checked));
     $('set-sfx-toggle').addEventListener('change', e => Sound.setSfx(e.target.checked));
     document.querySelectorAll('.lang-btn').forEach(b => {
-        b.addEventListener('click', () => { Sound.play('click', 0.5); switchLang(b.dataset.lang); });
+        b.addEventListener('click', () => { Sound.play('click'); switchLang(b.dataset.lang); });
     });
     $('settings-rules-btn').addEventListener('click', openRules);
     $('settings-tutorial-btn').addEventListener('click', () => {
-        Sound.play('click', 0.5);
+        Sound.play('click');
         localStorage.removeItem('dg_tut_done');
         closeModal();
         openSetupModal(false);
     });
     $('rules-prev').addEventListener('click', () => {
-        Sound.play('click', 0.5);
+        Sound.play('click');
         if (ruleIdx > 0) { ruleIdx--; renderRuleSlide(); }
     });
     $('rules-next').addEventListener('click', () => {
-        Sound.play('click', 0.5);
+        Sound.play('click');
         if (ruleIdx < RULE_SLIDES.length - 1) { ruleIdx++; renderRuleSlide(); }
         else closeModal();
     });
 
     // Продолжение партии
     $('resume-yes-btn').addEventListener('click', () => {
-        Sound.play('click', 0.5);
+        Sound.play('click');
         const data = loadSavedGame();
         if (data) restoreGame(data);
         else openSetupModal(false);
     });
     $('resume-no-btn').addEventListener('click', () => {
-        Sound.play('click', 0.5);
+        Sound.play('click');
         localStorage.removeItem('dg_save');
         openSetupModal(false);
     });
@@ -941,8 +943,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Вкладки «Поле» / «Подозреваемые»
-    $('tab-board').addEventListener('click', () => { Sound.play('click', 0.4); switchScreen('board'); });
-    $('tab-suspects').addEventListener('click', () => { Sound.play('click', 0.4); switchScreen('suspects'); });
+    $('tab-board').addEventListener('click', () => { Sound.play('click'); switchScreen('board'); });
+    $('tab-suspects').addEventListener('click', () => { Sound.play('click'); switchScreen('suspects'); });
 
     // Пересчёт позиций фишек при любом изменении размеров доски
     window.addEventListener('resize', () => requestAnimationFrame(() => { fitScreens(); positionPawns(); }));
