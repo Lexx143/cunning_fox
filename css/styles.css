@@ -305,8 +305,9 @@ img { -webkit-user-drag: none; }
 }
 .board-grid {
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(16, 1fr);
+    /* minmax(0,1fr): контент клетки (нора, грибы) не должен растягивать ряд */
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    grid-template-rows: repeat(16, minmax(0, 1fr));
     width: 100%;
     aspect-ratio: 1;
     border-radius: 21px;
@@ -344,7 +345,7 @@ img { -webkit-user-drag: none; }
 .cell-art.art-burrow img { width: 120%; height: 120%; }
 .cell-art.art-decor img { opacity: 0.55; width: 62%; height: 62%; }
 
-.board-cell.reachable { cursor: pointer; }
+.board-cell.reachable { cursor: pointer; z-index: 2; /* подсветка поверх тропы — кружки не срезаются */ }
 .board-cell.reachable::after {
     content: '';
     position: absolute;

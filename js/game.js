@@ -823,8 +823,14 @@ function preloadAssets(onDone) {
     ['tex-grass', 'tex-path', 'tex-page-bg', 'tile-mystery', 'board-bg'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
 
     let loaded = 0;
+    let finished = false;
     const bar = $('loading-bar-fill');
-    const finish = () => { $('loading-screen').classList.add('hidden'); onDone(); };
+    const finish = () => {
+        if (finished) return; // страховочный таймер не должен вызвать onDone повторно
+        finished = true;
+        $('loading-screen').classList.add('hidden');
+        onDone();
+    };
     const tick = () => {
         loaded++;
         if (bar) bar.style.width = Math.round(loaded / files.length * 100) + '%';
