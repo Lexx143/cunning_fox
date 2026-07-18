@@ -16,7 +16,7 @@
         <p data-i18n="loading"></p>
     </div>
 
-    <header class="header">
+    <header class="header" id="app-header">
         <div class="header-row">
             <h1 class="game-title"><span class="title-icon" id="title-icon"></span><span data-i18n="app_title"></span></h1>
             <div class="fox-danger level-safe" id="fox-danger">
@@ -32,29 +32,36 @@
             </div>
         </div>
         <div class="clue-chips" id="clue-chips"></div>
+        <div class="action-row">
+            <div class="players-strip" id="players-strip"></div>
+            <div class="status" id="status-text"></div>
+            <div class="action-buttons">
+                <span class="steps-badge hidden" id="steps-badge"><span class="steps-icon" id="steps-icon"></span><b id="steps-left">0</b></span>
+                <button id="roll-open-btn" class="btn btn-primary hidden"></button>
+                <button id="check-clue-btn" class="btn btn-accent hidden"></button>
+                <button id="end-turn-btn" class="btn btn-secondary hidden" data-i18n="btn_end_turn"></button>
+            </div>
+        </div>
+        <nav class="screen-tabs">
+            <button type="button" id="tab-board" class="tab selected" data-i18n="tab_board"></button>
+            <button type="button" id="tab-suspects" class="tab">
+                <span data-i18n="tab_suspects"></span>
+                <span id="tab-suspects-badge" class="tab-badge hidden"></span>
+            </button>
+        </nav>
     </header>
 
-    <main class="game-table" id="game-table">
-        <div class="suspect-edge edge-top" id="edge-top"></div>
-        <div class="suspect-edge edge-left" id="edge-left"></div>
-        <div class="board-wrap" id="board-wrap">
-            <div class="board-grid" id="board-grid"></div>
-            <div class="pawn-layer" id="pawn-layer"></div>
-        </div>
-        <div class="suspect-edge edge-right" id="edge-right"></div>
-        <div class="suspect-edge edge-bottom" id="edge-bottom"></div>
+    <main class="screens">
+        <section id="screen-board" class="screen">
+            <div class="board-wrap" id="board-wrap">
+                <div class="board-grid" id="board-grid"></div>
+                <div class="pawn-layer" id="pawn-layer"></div>
+            </div>
+        </section>
+        <section id="screen-suspects" class="screen hidden">
+            <div class="suspects-grid" id="suspects-grid"></div>
+        </section>
     </main>
-
-    <footer class="action-bar">
-        <div class="players-strip" id="players-strip"></div>
-        <div class="status" id="status-text"></div>
-        <div class="action-buttons">
-            <span class="steps-badge hidden" id="steps-badge"><span class="steps-icon" id="steps-icon"></span><b id="steps-left">0</b></span>
-            <button id="roll-open-btn" class="btn btn-primary hidden"></button>
-            <button id="check-clue-btn" class="btn btn-accent hidden"></button>
-            <button id="end-turn-btn" class="btn btn-secondary hidden" data-i18n="btn_end_turn"></button>
-        </div>
-    </footer>
 
     <div class="modal-overlay hidden" id="modal-overlay">
 
@@ -103,7 +110,12 @@
         <div class="modal hidden" id="modal-decoder" data-dismiss="true">
             <h2><span class="modal-icon" id="decoder-modal-icon"></span><span data-i18n="decoder_title"></span></h2>
             <p class="modal-sub" data-i18n="decoder_sub"></p>
-            <div id="decoder-box"></div>
+            <div class="lens-scene" id="lens-scene">
+                <img class="lens-item" id="lens-item" src="" alt="">
+                <img class="lens-magnifier" id="lens-magnifier" src="assets/cut/icon-magnifier.webp" alt="">
+                <div class="lens-verdict" id="lens-verdict"><img id="lens-verdict-item" src="" alt=""><span></span></div>
+            </div>
+            <p class="decoder-result" id="lens-text"></p>
             <div class="modal-actions">
                 <button class="btn btn-primary" id="decoder-close-btn" data-i18n="btn_ok"></button>
             </div>

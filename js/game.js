@@ -81,12 +81,15 @@ function restoreGame(data) {
     updateActionButtons();
     updateReachable();
     closeModal();
+    fitScreens();
 
     if (state.phase === 'revealing') {
         setStatus(t('status_reveal_left', { n: state.pendingReveals }));
+        switchScreen('suspects');
         updateAllSuspectCards();
     } else if (state.phase === 'moving') {
         setStatus(t('status_steps_left', { n: state.steps }));
+        switchScreen('board');
     } else {
         state.phase = 'rolling';
         const pl = activePlayer();
@@ -256,6 +259,8 @@ function startGame() {
     updateActionButtons();
     updateReachable();
     closeModal();
+    fitScreens();
+    switchScreen('suspects');
     Sound.play('cardDeal');
     saveGame();
 
@@ -288,6 +293,7 @@ function beginTurn(index) {
         ? t('status_turn_multi', { name: pl.name })
         : t('status_turn_solo'));
     renderPlayersStrip();
+    switchScreen('board');
     positionPawns();
     updateActionButtons();
     updateReachable();
@@ -455,6 +461,7 @@ function resolveRoll() {
                 state.revealContext = 'turn';
                 state.pendingReveals = Math.min(2, hiddenCount);
                 setStatus(state.pendingReveals === 1 ? t('status_open_1') : t('status_open_2'));
+                switchScreen('suspects');
                 updateAllSuspectCards();
                 updateActionButtons();
                 saveGame();
@@ -469,6 +476,7 @@ function resolveRoll() {
                 state.phase = 'moving';
                 state.steps = steps;
                 setStatus(t('status_move', { n: steps }));
+                switchScreen('board');
                 updateActionButtons();
                 updateReachable();
                 saveGame();
@@ -551,15 +559,29 @@ function pickMushroom() {
     state.checked[clue.clueKey] = hasIt;
     state.clues.splice(idx, 1);
 
+    // Сцена «лупа наводится на улику»: предмет в центре, лупа подъезжает,
+    // в линзе с задержкой появляется вердикт
     const label = t('clue_' + clue.clueKey);
-    $('decoder-box').innerHTML = `
-        <div class="decoder-mushroom">${mushroomImg(84)}</div>
-        <div class="decoder-item">${itemImg(clue.clueKey, 72)}</div>
-        <p class="decoder-result ${hasIt ? 'res-yes' : 'res-no'}">
-            ${hasIt ? t('decoder_has', { label }) : t('decoder_hasnt', { label })}
-        </p>`;
+    $('lens-item').src = ASSET_DIR + 'item-' + clue.clueKey + '.webp';
+    $('lens-verdict-item').src = ASSET_DIR + 'item-' + clue.clueKey + '.webp';
+    const verdict = $('lens-verdict');
+    verdict.className = 'lens-verdict ' + (hasIt ? 'show-yes' : 'show-no');
+    verdict.querySelector('span').textContent = hasIt ? '✓' : '✗';
+    verdict.querySelector('span').style.color = hasIt ? '#2f6b3b' : '#a33630';
+    const txt = $('lens-text');
+    txt.textContent = hasIt ? t('decoder_has', { label }) : t('decoder_hasnt', { label });
+    txt.className = 'decoder-result delayed ' + (hasIt ? 'res-yes' : 'res-no');
+    // перезапуск CSS-анимаций сцены
+    const mag = $('lens-magnifier');
+    [mag, verdict, txt].forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+
     openModal('modal-decoder');
-    Sound.play(hasIt ? 'success' : 'cardFlip');
+    Sound.play('clue', 0.7);
+    const token = state.turnId;
+    setTimeout(() => {
+        if (token !== state.turnId) return;
+        Sound.play(hasIt ? 'success' : 'cardFlip');
+    }, 1200);
 
     updateClueChips();
     updateBoardCells();
@@ -918,8 +940,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else closeModal();
     });
 
+    // Вкладки «Поле» / «Подозреваемые»
+    $('tab-board').addEventListener('click', () => { Sound.play('click', 0.4); switchScreen('board'); });
+    $('tab-suspects').addEventListener('click', () => { Sound.play('click', 0.4); switchScreen('suspects'); });
+
     // Пересчёт позиций фишек при любом изменении размеров доски
-    window.addEventListener('resize', () => requestAnimationFrame(positionPawns));
+    window.addEventListener('resize', () => requestAnimationFrame(() => { fitScreens(); positionPawns(); }));
     new ResizeObserver(() => positionPawns()).observe($('board-grid'));
     // страховка: некоторые окружения не шлют resize при смене вьюпорта
     let lastBoardW = 0;
@@ -932,8 +958,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 
     initDonation();
+    fitScreens();
 
     preloadAssets(() => {
+        fitScreens();
         const saved = loadSavedGame();
         if (saved) openModal('modal-resume');
         else openSetupModal(false);

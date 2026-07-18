@@ -11,19 +11,19 @@ const Tutorial = (() => {
     // advance: 'next' (кнопка) | 'event:имя' (ждём событие игры)
     // Кубики в обучении «подкручены»: 1-й ход всегда «глаза», 2-й — «следы».
     const SCRIPT = [
-        { text: 'tut1',           target: '#fox-token',     advance: 'next' },
-        { text: 'tut2',           target: '#edge-top',      advance: 'event:revealed2' },
-        { text: 'tut3',           target: '#roll-open-btn', advance: 'event:diceOpened' },
-        { text: 'tut_eyes',       target: '#roll-btn',      advance: 'event:rollResolved' },
-        { text: 'tut_open_more',  target: '#edge-top',      advance: 'event:revealed2' },
-        { text: 'tut_roll_again', target: '#roll-open-btn', advance: 'event:diceOpened' },
-        { text: 'tut_paws',       target: '#roll-btn',      advance: 'event:rollResolved' },
-        { text: 'tut6',           target: '#fox-danger',    advance: 'next' },
-        { text: 'tut7',           target: '#board-wrap',    advance: 'event:cluePicked' },
-        { text: 'tut9',           target: '#clue-chips',    advance: 'next' },
-        { text: 'tut10',          target: '#edge-top',      advance: 'next' },
-        { text: 'tut11',          target: '#edge-top',      advance: 'next' },
-        { text: 'tut12',          target: null,             advance: 'finish' },
+        { text: 'tut1',           target: '#board-wrap',     advance: 'next', screen: 'board' },
+        { text: 'tut2',           target: '#suspects-grid',  advance: 'event:revealed2', screen: 'suspects' },
+        { text: 'tut3',           target: '#roll-open-btn',  advance: 'event:diceOpened' },
+        { text: 'tut_eyes',       target: '#roll-btn',       advance: 'event:rollResolved' },
+        { text: 'tut_open_more',  target: '#suspects-grid',  advance: 'event:revealed2' },
+        { text: 'tut_roll_again', target: '#roll-open-btn',  advance: 'event:diceOpened' },
+        { text: 'tut_paws',       target: '#roll-btn',       advance: 'event:rollResolved' },
+        { text: 'tut6',           target: '#fox-danger',     advance: 'next' },
+        { text: 'tut7',           target: '#board-wrap',     advance: 'event:cluePicked' },
+        { text: 'tut9',           target: '#clue-chips',     advance: 'next' },
+        { text: 'tut10',          target: '#suspects-grid',  advance: 'next', screen: 'suspects' },
+        { text: 'tut11',          target: '#suspects-grid',  advance: 'next' },
+        { text: 'tut12',          target: null,              advance: 'finish' },
     ];
 
     // «Подкрутка» кубиков: какой цели гарантируем успех в текущем ходе обучения
@@ -94,6 +94,7 @@ const Tutorial = (() => {
     function showStep() {
         const step = SCRIPT[stepIdx];
         if (!step) { finish(); return; }
+        if (step.screen) switchScreen(step.screen);
         document.getElementById('tut-text').textContent = t(step.text);
         document.getElementById('tut-skip').textContent = t('tut_skip');
         const nextBtn = document.getElementById('tut-next');

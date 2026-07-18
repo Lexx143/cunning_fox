@@ -5,6 +5,8 @@ const I18N = {
         app_title: 'Детективная братва',
         loading: 'Загрузка…',
         danger_label: 'До норы:',
+        tab_board: 'Поле',
+        tab_suspects: 'Подозреваемые',
 
         // Приметы
         clue_hat: 'Шляпа', clue_glasses: 'Очки', clue_scarf: 'Шарф',
@@ -139,6 +141,8 @@ const I18N = {
         app_title: 'Detective Gang',
         loading: 'Loading…',
         danger_label: 'To the den:',
+        tab_board: 'Board',
+        tab_suspects: 'Suspects',
 
         clue_hat: 'Hat', clue_glasses: 'Glasses', clue_scarf: 'Scarf',
         clue_umbrella: 'Umbrella', clue_monocle: 'Monocle', clue_watch: 'Watch',

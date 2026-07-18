@@ -332,10 +332,49 @@ function positionFoxToken(cellSize) {
     updateTrailProgress();
 }
 
+// ---------- Экраны «Поле» / «Подозреваемые» ----------
+function switchScreen(name) {
+    $('screen-board').classList.toggle('hidden', name !== 'board');
+    $('screen-suspects').classList.toggle('hidden', name !== 'suspects');
+    $('tab-board').classList.toggle('selected', name === 'board');
+    $('tab-suspects').classList.toggle('selected', name === 'suspects');
+    if (name === 'suspects') $('tab-suspects').classList.remove('attention');
+    if (name === 'board') requestAnimationFrame(positionPawns);
+}
+
+function currentScreen() {
+    return $('screen-board').classList.contains('hidden') ? 'suspects' : 'board';
+}
+
+// бейдж на вкладке: сколько карт ещё закрыто
+function updateSuspectsBadge() {
+    const hidden = SUSPECTS.filter(s => !s.isRevealed).length;
+    const badge = $('tab-suspects-badge');
+    badge.textContent = hidden;
+    badge.classList.toggle('hidden', hidden === 0 || !state.players.length);
+}
+
+// вписываем оба экрана в высоту вьюпорта — без прокрутки страницы
+function fitScreens() {
+    const top = $('app-header').offsetHeight;
+    const avail = Math.max(300, window.innerHeight - top - 18);
+    const bw = Math.max(280, Math.min(window.innerWidth * 0.94, avail, 780));
+    $('board-wrap').style.width = bw + 'px';
+
+    const sg = $('suspects-grid');
+    const gap = 10;
+    const gridH = avail - 6;
+    sg.style.height = gridH + 'px';
+    // ширина сетки — из пропорции карточки (~0.74), чтобы карты не расплывались
+    const cellH = (gridH - 3 * gap) / 4;
+    const gridW = Math.min(cellH * 0.74 * 4 + 3 * gap, window.innerWidth * 0.96);
+    sg.style.width = gridW + 'px';
+}
+
 // ---------- Карты подозреваемых ----------
 function buildSuspectCards() {
-    const edges = [$('edge-top'), $('edge-right'), $('edge-bottom'), $('edge-left')];
-    edges.forEach(e => e.innerHTML = '');
+    const grid = $('suspects-grid');
+    grid.innerHTML = '';
 
     SUSPECTS.forEach((s, i) => {
         const card = document.createElement('div');
@@ -352,9 +391,10 @@ function buildSuspectCards() {
                 </div>
             </div>`;
         card.addEventListener('click', () => onSuspectClick(i));
-        edges[Math.floor(i / 4)].appendChild(card);
+        grid.appendChild(card);
     });
     updateAllSuspectCards();
+    updateSuspectsBadge();
 }
 
 function suspectAttrIcons(s, size) {
@@ -369,6 +409,7 @@ function updateSuspectCard(i) {
     card.classList.toggle('revealed', !!s.isRevealed);
     card.classList.toggle('pulse', state.phase === 'revealing' && !s.isRevealed && state.pendingReveals > 0);
     card.classList.toggle('released', !!s.isReleased);
+    updateSuspectsBadge();
 
     // Сопоставлять приметы с уликами игрок должен сам — никаких авто-подсказок
     const stamp = card.querySelector('.stamp');

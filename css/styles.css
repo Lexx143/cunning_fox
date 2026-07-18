@@ -43,7 +43,7 @@ body {
     background-image: url('../assets/tex-page-bg.webp');
     background-size: 480px;
     min-height: 100vh;
-    padding-bottom: 92px; /* место под панель действий */
+    overflow: hidden; /* экраны вписываются в вьюпорт целиком */
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -208,30 +208,68 @@ img { -webkit-user-drag: none; }
 .clue-chip.chip-no svg,
 .clue-chip.chip-no img { filter: grayscale(1); opacity: 0.55; }
 
-/* ================= Игровой стол ================= */
-.game-table {
-    display: grid;
-    grid-template-areas:
-        ". top ."
-        "left board right"
-        ". bottom .";
-    grid-template-columns: auto minmax(0, auto) auto;
+/* ================= Вкладки и экраны ================= */
+.screen-tabs {
+    display: flex;
     justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+.tab {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 8px 22px;
+    border-radius: 14px 14px 0 0;
+    border: 2.5px solid rgba(74, 50, 38, 0.18);
+    border-bottom: none;
+    background: rgba(255, 250, 240, 0.6);
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
-    gap: 14px;
-    padding: 8px 12px 20px;
-    max-width: 1240px;
+    gap: 7px;
+    transition: background 0.15s;
+}
+.tab.selected {
+    background: var(--panel);
+    color: var(--ink);
+    border-color: var(--accent);
+    box-shadow: 0 -3px 8px rgba(74, 50, 38, 0.08);
+}
+.tab-badge {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.tab.attention { animation: tab-pulse 1s ease-in-out infinite; }
+@keyframes tab-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 134, 58, 0); }
+    50% { box-shadow: 0 0 0 5px rgba(232, 134, 58, 0.45); }
+}
+
+.screens { display: flex; justify-content: center; padding: 10px 8px 8px; }
+.screen { display: flex; justify-content: center; align-items: flex-start; width: 100%; }
+
+/* Сетка подозреваемых 4×4 — целиком на экран */
+.suspects-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
     margin: 0 auto;
 }
-.suspect-edge { display: flex; gap: 10px; justify-content: center; }
-.edge-top { grid-area: top; }
-.edge-bottom { grid-area: bottom; }
-.edge-left { grid-area: left; flex-direction: column; }
-.edge-right { grid-area: right; flex-direction: column; }
 
 /* Поле-лужайка */
 .board-wrap {
-    grid-area: board;
     position: relative;
     width: min(92vw, 780px);
     margin: 0 auto;
@@ -346,8 +384,9 @@ img { -webkit-user-drag: none; }
 
 /* ================= Карты подозреваемых ================= */
 .fox-card {
-    width: 122px;
-    height: 168px;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
     perspective: 700px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -384,7 +423,13 @@ img { -webkit-user-drag: none; }
     border: 3px solid #e3cba4;
     gap: 3px;
 }
-.card-front .portrait-img { width: auto; height: 106px; }
+.card-front .portrait-img {
+    width: auto;
+    max-width: 100%;
+    flex: 1;
+    min-height: 0;
+    object-fit: contain;
+}
 .portrait-img {
     display: block;
     margin: 0 auto;
@@ -424,24 +469,19 @@ img { -webkit-user-drag: none; }
 }
 .stamp-released { color: #8a8a8a; border-color: #8a8a8a; }
 
-/* ================= Панель действий ================= */
-.action-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 50;
+/* ================= Панель действий (в шапке, всегда на виду) ================= */
+.action-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 16px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    background: rgba(255, 250, 240, 0.94);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border-top: 2px solid rgba(74, 50, 38, 0.15);
-    box-shadow: 0 -4px 16px rgba(74, 50, 38, 0.12);
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255, 250, 240, 0.85);
+    border: 2px solid rgba(74, 50, 38, 0.12);
+    box-shadow: var(--shadow-sm);
+    min-height: 62px;
 }
 .players-strip { display: flex; gap: 6px; flex-wrap: wrap; }
 .player-chip {
@@ -711,22 +751,95 @@ img { -webkit-user-drag: none; }
 .dice-actions { align-items: center; }
 .rolls-left { font-weight: 700; font-size: 1.05rem; }
 
-/* Дешифратор */
-#decoder-box {
+/* Дешифратор: сцена «лупа наводится на улику» */
+.lens-scene {
+    position: relative;
+    width: 270px;
+    height: 215px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+.lens-item {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 86px;
+    height: 86px;
+    transform: translate(-50%, -50%);
+}
+.lens-verdict {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 104px;
+    height: 104px;
+    transform: translate(-50%, -50%) scale(0.55);
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
 }
-.decoder-mushroom { position: relative; }
-.decoder-mushroom::after {
-    content: '↓';
-    display: block;
-    text-align: center;
-    font-size: 1.5rem;
+.lens-verdict img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(74, 50, 38, 0.35));
+}
+.lens-verdict span {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
     font-weight: 800;
-    color: var(--ink-soft);
+    box-shadow: 0 2px 5px rgba(74, 50, 38, 0.35);
 }
+.lens-verdict.show-yes {
+    background: radial-gradient(circle, rgba(120, 205, 130, 0.55) 0%, rgba(120, 205, 130, 0.2) 62%, transparent 75%);
+    box-shadow: inset 0 0 0 4px rgba(79, 157, 93, 0.55);
+    color: #2f6b3b;
+    animation: verdict-in 0.45s 1.15s forwards;
+}
+.lens-verdict.show-no {
+    background: radial-gradient(circle, rgba(220, 120, 115, 0.5) 0%, rgba(220, 120, 115, 0.18) 62%, transparent 75%);
+    box-shadow: inset 0 0 0 4px rgba(200, 80, 75, 0.55);
+    color: #a33630;
+    animation: verdict-in 0.45s 1.15s forwards;
+}
+@keyframes verdict-in {
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.lens-magnifier {
+    position: absolute;
+    width: 175px;
+    height: 175px;
+    /* линза арта — в точке ~62%/35% картинки: совмещаем её с уликой */
+    left: calc(50% - 108px);
+    top: calc(46% - 61px);
+    animation: lens-scan 1.25s ease-out forwards;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 5px rgba(74, 50, 38, 0.3));
+}
+@keyframes lens-scan {
+    0% { transform: translate(190px, 130px) rotate(16deg); opacity: 0; }
+    22% { opacity: 1; }
+    55% { transform: translate(-28px, -16px) rotate(-7deg); }
+    80% { transform: translate(15px, 9px) rotate(4deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+.decoder-result.delayed {
+    opacity: 0;
+    animation: verdict-text-in 0.4s 1.25s forwards;
+}
+@keyframes verdict-text-in { to { opacity: 1; } }
 .item-img { display: inline-block; vertical-align: middle; border-radius: 6px; }
 .decoder-result {
     display: flex;
@@ -889,49 +1002,33 @@ img { -webkit-user-drag: none; }
 }
 .tut-actions .btn { min-height: 38px; padding: 6px 16px; font-size: 0.9rem; }
 
-/* ================= Планшет ================= */
-@media (max-width: 1180px) {
-    .fox-card { width: 104px; height: 148px; }
-    .card-front .portrait-img { height: 86px; }
+/* ================= Компактная высота (карточки без примет) ================= */
+@media (max-height: 760px) {
+    .card-attrs { display: none; }
+    .card-name { font-size: 0.82rem; }
 }
 
 /* ================= Мобильные ================= */
 @media (max-width: 767px) {
-    body { padding-bottom: 130px; }
+    .header { padding: 8px 10px 0; }
+    .header-row { justify-content: center; gap: 8px; }
+    .game-title { font-size: 1.15rem; }
+    .icon-btn { width: 40px; height: 40px; }
+    .header-btns .btn { padding: 8px 14px; font-size: 0.85rem; min-height: 40px; }
+    .fox-danger { padding: 4px 12px; font-size: 0.9rem; }
 
-    .header-row { justify-content: center; }
-
-    .game-table {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 4px 10px 16px;
-    }
-    .board-wrap { order: 1; width: min(96vw, 520px); }
-    .edge-top { order: 2; }
-    .edge-right { order: 3; }
-    .edge-bottom { order: 4; }
-    .edge-left { order: 5; }
-
-    .suspect-edge {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        flex-direction: unset;
-        width: 100%;
-        max-width: 480px;
-        margin: 0 auto;
-    }
-    .fox-card { width: 100%; height: 128px; }
-    .card-front { padding: 4px 2px; }
-    .card-front .portrait-img { height: 82px; }
-    .card-name { font-size: 0.78rem; }
-    .card-attrs { display: none; }
-    .stamp { font-size: 0.62rem; }
-
-    .action-bar { flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+    .action-row { flex-wrap: wrap; justify-content: center; row-gap: 6px; margin-top: 6px; padding: 6px 8px; min-height: 0; }
     .players-strip { width: 100%; justify-content: center; }
-    .status { flex-basis: 100%; order: -1; }
+    .status { flex-basis: 100%; order: -1; font-size: 0.85rem; }
+    .action-buttons .btn { padding: 8px 14px; font-size: 0.9rem; min-height: 40px; }
+
+    .tab { padding: 6px 14px; font-size: 0.88rem; }
+
+    .card-front { padding: 4px 2px; }
+    .card-name { font-size: 0.74rem; }
+    .card-attrs { display: none; }
+    .stamp { font-size: 0.6rem; }
+    .suspects-grid { gap: 7px; }
 
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal {
