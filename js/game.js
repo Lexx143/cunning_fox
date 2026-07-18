@@ -593,6 +593,7 @@ function pickMushroom() {
 function closeDecoderModal() {
     Sound.play('click');
     closeModal();
+    Tutorial.notify('decoderClosed');
     if (state.phase !== 'moving') return;
     if (state.steps === 0) {
         const token = state.turnId;
