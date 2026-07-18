@@ -258,6 +258,9 @@ img { -webkit-user-drag: none; }
 
 .screens { display: flex; justify-content: center; padding: 10px 8px 8px; }
 .screen { display: flex; justify-content: center; align-items: flex-start; width: 100%; }
+/* Режим ноутбука: поле и подозреваемые рядом */
+.screens.split { gap: 22px; align-items: flex-start; }
+.screens.split .screen { width: auto; }
 
 /* Сетка подозреваемых 4×4 — целиком на экран */
 .suspects-grid {

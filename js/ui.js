@@ -333,17 +333,37 @@ function positionFoxToken(cellSize) {
 }
 
 // ---------- Экраны «Поле» / «Подозреваемые» ----------
+let activeTab = 'board';
+
+// На широких ландшафтных экранах (ноутбук/планшет боком) показываем оба экрана рядом
+function isSplitLayout() {
+    return window.innerWidth >= 1150 && window.innerWidth > window.innerHeight;
+}
+
+function applyLayoutMode() {
+    const split = isSplitLayout();
+    document.querySelector('.screens').classList.toggle('split', split);
+    document.querySelector('.screen-tabs').classList.toggle('hidden', split);
+    if (split) {
+        $('screen-board').classList.remove('hidden');
+        $('screen-suspects').classList.remove('hidden');
+    } else {
+        $('screen-board').classList.toggle('hidden', activeTab !== 'board');
+        $('screen-suspects').classList.toggle('hidden', activeTab !== 'suspects');
+    }
+}
+
 function switchScreen(name) {
-    $('screen-board').classList.toggle('hidden', name !== 'board');
-    $('screen-suspects').classList.toggle('hidden', name !== 'suspects');
+    activeTab = name;
     $('tab-board').classList.toggle('selected', name === 'board');
     $('tab-suspects').classList.toggle('selected', name === 'suspects');
     if (name === 'suspects') $('tab-suspects').classList.remove('attention');
-    if (name === 'board') requestAnimationFrame(positionPawns);
+    applyLayoutMode();
+    if (name === 'board' || isSplitLayout()) requestAnimationFrame(positionPawns);
 }
 
 function currentScreen() {
-    return $('screen-board').classList.contains('hidden') ? 'suspects' : 'board';
+    return activeTab;
 }
 
 // бейдж на вкладке: сколько карт ещё закрыто
@@ -354,21 +374,35 @@ function updateSuspectsBadge() {
     badge.classList.toggle('hidden', hidden === 0 || !state.players.length);
 }
 
-// вписываем оба экрана в высоту вьюпорта — без прокрутки страницы
+// вписываем экраны в высоту вьюпорта — без прокрутки страницы
 function fitScreens() {
+    applyLayoutMode();
     const top = $('app-header').offsetHeight;
-    const avail = Math.max(300, window.innerHeight - top - 18);
-    const bw = Math.max(280, Math.min(window.innerWidth * 0.94, avail, 780));
-    $('board-wrap').style.width = bw + 'px';
-
+    const avail = Math.max(300, window.innerHeight - top - 26);
     const sg = $('suspects-grid');
     const gap = 10;
-    const gridH = avail - 6;
-    sg.style.height = gridH + 'px';
-    // ширина сетки — из пропорции карточки (~0.74), чтобы карты не расплывались
-    const cellH = (gridH - 3 * gap) / 4;
-    const gridW = Math.min(cellH * 0.74 * 4 + 3 * gap, window.innerWidth * 0.96);
-    sg.style.width = gridW + 'px';
+
+    if (isSplitLayout()) {
+        // ноутбук: поле и сетка подозреваемых рядом, обе по высоте avail
+        const maxW = window.innerWidth * 0.97;
+        let H = Math.min(avail, 780);
+        // суммарная ширина: поле (H) + сетка (~0.74·H) + зазоры
+        if (H * 1.74 + 3 * gap + 30 > maxW) {
+            H = Math.floor((maxW - 3 * gap - 30) / 1.74);
+        }
+        $('board-wrap').style.width = H + 'px';
+        sg.style.height = H + 'px';
+        const cellH = (H - 3 * gap) / 4;
+        sg.style.width = Math.round(cellH * 0.74 * 4 + 3 * gap) + 'px';
+    } else {
+        const bw = Math.max(280, Math.min(window.innerWidth * 0.94, avail, 780));
+        $('board-wrap').style.width = bw + 'px';
+        const gridH = avail - 6;
+        sg.style.height = gridH + 'px';
+        // ширина сетки — из пропорции карточки (~0.74), чтобы карты не расплывались
+        const cellH = (gridH - 3 * gap) / 4;
+        sg.style.width = Math.min(cellH * 0.74 * 4 + 3 * gap, window.innerWidth * 0.96) + 'px';
+    }
 }
 
 // ---------- Карты подозреваемых ----------

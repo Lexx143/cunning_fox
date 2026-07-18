@@ -947,12 +947,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Пересчёт позиций фишек при любом изменении размеров доски
     window.addEventListener('resize', () => requestAnimationFrame(() => { fitScreens(); positionPawns(); }));
     new ResizeObserver(() => positionPawns()).observe($('board-grid'));
+    // после загрузки шрифта высота шапки меняется — пересчитываем компоновку
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => { fitScreens(); positionPawns(); });
+    }
     // страховка: некоторые окружения не шлют resize при смене вьюпорта
-    let lastBoardW = 0;
+    let lastFitSig = '';
     setInterval(() => {
-        const w = $('board-grid').clientWidth;
-        if (w !== lastBoardW) {
-            lastBoardW = w;
+        const sig = $('board-grid').clientWidth + 'x' + $('app-header').offsetHeight + 'x' + window.innerWidth + 'x' + window.innerHeight;
+        if (sig !== lastFitSig) {
+            lastFitSig = sig;
+            fitScreens();
             positionPawns();
         }
     }, 500);
