@@ -825,7 +825,7 @@ img { -webkit-user-drag: none; }
 /* Правила */
 #rules-slide { min-height: 240px; }
 .rules-art { display: flex; justify-content: center; margin: 8px 0; }
-.rules-art img { max-height: 120px; width: auto; }
+.rules-art img { max-height: 150px; width: auto; }
 .rules-slide-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; }
 .rules-text { font-weight: 600; color: var(--ink-soft); line-height: 1.45; margin: 0; }
 #rules-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }

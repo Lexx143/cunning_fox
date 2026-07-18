@@ -732,14 +732,11 @@ function switchLang(lang) {
 }
 
 // --- Правила (карусель) ---
-const RULE_SLIDES = [
-    { img: () => foxThiefImg(110), tKey: 'rule1_t', key: 'rule1' },
-    { img: () => diceIconImg(110), tKey: 'rule2_t', key: 'rule2' },
-    { img: () => mushroomImg(110), tKey: 'rule3_t', key: 'rule3' },
-    { img: () => magnifierImg(110), tKey: 'rule4_t', key: 'rule4' },
-    { img: () => `<img class="rules-suspect" src="${ASSET_DIR}${SUSPECT_IMGS[0]}" alt="">`, tKey: 'rule5_t', key: 'rule5' },
-    { img: () => pieImg(110), tKey: 'rule6_t', key: 'rule6' },
-];
+const RULE_SLIDES = [1, 2, 3, 4, 5, 6].map(n => ({
+    img: () => `<img src="${ASSET_DIR}rules-${n}.webp" alt="">`,
+    tKey: `rule${n}_t`,
+    key: `rule${n}`,
+}));
 let ruleIdx = 0;
 
 function openRules() {
@@ -788,7 +785,7 @@ function preloadAssets(onDone) {
      'icon-dice', 'icon-magnifier', 'clue-mushroom',
      'decor-bush', 'decor-flower-pink', 'decor-flower-white', 'decor-grass', 'decor-stone']
         .forEach(n => files.push(ASSET_DIR + n + '.webp'));
-    ['tex-grass', 'tex-path', 'tex-page-bg', 'tile-mystery'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
+    ['tex-grass', 'tex-path', 'tex-page-bg', 'tile-mystery', 'board-bg'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
 
     let loaded = 0;
     const bar = $('loading-bar-fill');
