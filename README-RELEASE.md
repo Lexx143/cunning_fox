@@ -10,9 +10,9 @@
 ## Что нужно установить один раз
 
 1. **Android Studio** (или Command line tools): https://developer.android.com/studio
-2. **Java 17** (сейчас на Mac стоит Java 11 — для сборки нужна 17):
+2. **Java 17** (установлены автоматически: Java 21 (brew) и Android SDK (cmdline-tools)):
    ```bash
-   brew install openjdk@17
+   # уже установлено: openjdk@21 + android-commandlinetools
    sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
    ```
 3. Аккаунт **Google Play Console** ($25 разово): https://play.google.com/console
