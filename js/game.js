@@ -846,6 +846,56 @@ function preloadAssets(onDone) {
     setTimeout(finish, 8000); // страховка от зависания загрузки
 }
 
+// ================= Постановочные сцены для скриншотов стора =================
+
+function setupScreenshotScene(kind) {
+    const params = new URLSearchParams(location.search);
+    const lang = params.get('lang');
+    if (lang && I18N[lang]) { LANG = lang; applyStaticTexts(); }
+    localStorage.setItem('dg_tut_done', '1');
+    localStorage.removeItem('dg_save');
+
+    renderPlayerSetupRows(getSelectedPlayerCount()); // иначе startGame не найдёт игроков
+    startGame();
+    Tutorial.finish();
+    closeModal();
+
+    // открываем несколько карт для живости
+    [0, 3, 7, 12].forEach(i => { SUSPECTS[i].isRevealed = true; });
+
+    if (kind === 'suspects') {
+        updateAllSuspectCards();
+        switchScreen('suspects');
+    } else if (kind === 'dice') {
+        state.phase = 'rolling';
+        openDiceModal();
+        state.target = 'clues';
+        state.dice = [DICE_FACES[3], DICE_FACES[0], DICE_FACES[5]].map(f => ({ ...f }));
+        state.locked = [true, false, true];
+        updateDiceUI();
+    } else if (kind === 'decoder') {
+        state.phase = 'moving';
+        state.steps = 2;
+        const c = state.clues[0];
+        activePlayer().pos = { x: c.x, y: c.y };
+        positionPawns();
+        pickMushroom();
+    } else { // board
+        state.phase = 'moving';
+        state.steps = 3;
+        state.fox = 4;
+        activePlayer().pos = { x: 6, y: 6 };
+        positionFoxToken();
+        updateDangerBadge();
+        positionPawns();
+        updateActionButtons();
+        updateReachable();
+        setStatus(t('status_move', { n: 3 }));
+        switchScreen('board');
+    }
+    updateAllSuspectCards();
+}
+
 // ================= Инициализация =================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -976,6 +1026,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     preloadAssets(() => {
         fitScreens();
+        // служебный режим для скриншотов стора: ?shot=board|suspects|dice|decoder&lang=ru|en
+        const shot = new URLSearchParams(location.search).get('shot');
+        if (shot) { setupScreenshotScene(shot); return; }
         const saved = loadSavedGame();
         if (saved) openModal('modal-resume');
         else openSetupModal(false);
