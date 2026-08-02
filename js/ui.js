@@ -98,9 +98,43 @@ function buildClueChips() {
         chip.className = 'clue-chip';
         chip.id = 'chip-' + ct.key;
         chip.innerHTML = `${itemImg(ct.key, 18)}<span class="chip-mark">·</span>`;
+        chip.addEventListener('click', () => showChipTip(chip, ct.key));
         wrap.appendChild(chip);
     });
     updateClueChips();
+}
+
+// Тап по чипу улики: подпрыгивание + всплывающая подпись, что это значит
+let chipTipTimer = null;
+
+function showChipTip(chip, key) {
+    const label = t('clue_' + key);
+    const text = !(key in state.checked)
+        ? t('chip_unknown', { label })
+        : state.checked[key] ? t('chip_yes', { label }) : t('chip_no', { label });
+
+    let tip = $('chip-tip');
+    if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'chip-tip';
+        document.body.appendChild(tip);
+    }
+    tip.textContent = text;
+    tip.classList.add('visible');
+    const r = chip.getBoundingClientRect();
+    const w = tip.offsetWidth;
+    tip.style.left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, window.innerWidth - w - 8)) + 'px';
+    tip.style.top = (r.bottom + 8) + 'px';
+
+    const img = chip.querySelector('img');
+    if (img) {
+        img.classList.remove('poke');
+        void img.offsetWidth;
+        img.classList.add('poke');
+    }
+    Sound.play('click');
+    clearTimeout(chipTipTimer);
+    chipTipTimer = setTimeout(() => tip.classList.remove('visible'), 2200);
 }
 
 function updateClueChips() {

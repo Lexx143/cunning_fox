@@ -212,6 +212,25 @@ img { -webkit-user-drag: none; }
     box-shadow: var(--shadow-sm);
 }
 .clue-chip .chip-mark { font-size: 0.85em; min-width: 0.9em; text-align: center; }
+.clue-chip { cursor: pointer; }
+
+/* всплывающая подпись чипа улики */
+#chip-tip {
+    position: fixed;
+    z-index: 250;
+    background: var(--panel);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 7px 13px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    box-shadow: 0 6px 18px rgba(40, 25, 12, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    white-space: nowrap;
+}
+#chip-tip.visible { opacity: 1; }
 .clue-chip.chip-yes { border-color: var(--green); background: var(--green-soft); color: #2f6b3b; }
 .clue-chip.chip-no { border-color: #c9b8a4; background: #f1ece4; color: #9a8873; }
 .clue-chip.chip-no svg,
