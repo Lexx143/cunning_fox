@@ -161,7 +161,7 @@ function updateClueChips() {
 
 // ---------- Игровое поле ----------
 function isFoxPathCell(x, y) {
-    return FOX_PATH.some(p => p.x === x && p.y === y);
+    return FOX_PATH.some(p => Math.round(p.x) === x && Math.round(p.y) === y);
 }
 
 function buildBoard() {
@@ -187,7 +187,6 @@ function cellAt(x, y) {
 }
 
 // ---------- Плавная тропа лиса (Catmull-Rom → Bezier) ----------
-let TRAIL_LENGTHS = null; // накопленные длины полилайна до каждой точки тропы
 
 function trailPoints() {
     // центры клеток тропы в координатах viewBox 0..100
@@ -213,6 +212,8 @@ function trailPathD() {
 }
 
 function buildTrailSVG() {
+    // сама тропа нарисована в арте фона; SVG остаётся только для
+    // тёмного следа «пройденного» участка за лисом
     const old = $('trail-svg');
     if (old) old.remove();
     const d = trailPathD();
@@ -222,36 +223,19 @@ function buildTrailSVG() {
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.innerHTML = `
-        <defs>
-            <pattern id="trail-tex" patternUnits="userSpaceOnUse" width="14" height="14">
-                <image href="${ASSET_RAW}tex-path.webp" x="0" y="0" width="14" height="14"/>
-            </pattern>
-        </defs>
-        <path d="${d}" fill="none" stroke="#8a6a45" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
-        <path d="${d}" fill="none" stroke="url(#trail-tex)" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-        <path id="trail-passed" d="${d}" fill="none" stroke="rgba(80,55,30,0.3)" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="trail-passed" d="${d}" fill="none" stroke="rgba(80,55,30,0.28)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
     `;
     const wrap = $('board-wrap');
     wrap.insertBefore(svg, $('pawn-layer'));
-
-    // приблизительные длины кривой до каждой точки (по полилайну)
-    const pts = trailPoints();
-    TRAIL_LENGTHS = [0];
-    for (let i = 1; i < pts.length; i++) {
-        const dx = pts[i][0] - pts[i - 1][0];
-        const dy = pts[i][1] - pts[i - 1][1];
-        TRAIL_LENGTHS[i] = TRAIL_LENGTHS[i - 1] + Math.hypot(dx, dy);
-    }
     updateTrailProgress();
 }
 
 function updateTrailProgress() {
     const passed = $('trail-passed');
-    if (!passed || !TRAIL_LENGTHS) return;
+    if (!passed) return;
     const total = passed.getTotalLength();
-    const frac = TRAIL_LENGTHS[Math.min(state.fox, TRAIL_LENGTHS.length - 1)] / TRAIL_LENGTHS[TRAIL_LENGTHS.length - 1];
-    const passedLen = total * frac;
-    passed.setAttribute('stroke-dasharray', `${passedLen} ${total}`);
+    const frac = Math.min(1, state.fox / FOX_TRACK_LENGTH);
+    passed.setAttribute('stroke-dasharray', `${total * frac} ${total}`);
 }
 
 function updateBoardCells() {
@@ -364,9 +348,10 @@ function positionFoxToken(cellSize, animateFromIdx = null) {
     fox.classList.toggle('in-burrow', state.fox >= FOX_TRACK_LENGTH);
 
     const path = $('trail-passed');
-    if (!path || !TRAIL_LENGTHS) return;
+    if (!path) return;
     const total = path.getTotalLength();
-    const fracOf = idx => TRAIL_LENGTHS[Math.min(idx, TRAIL_LENGTHS.length - 1)] / TRAIL_LENGTHS[TRAIL_LENGTHS.length - 1];
+    // каждый шаг лиса — 1/16 длины кривой (опорных точек может быть сколько угодно)
+    const fracOf = idx => Math.min(1, idx / FOX_TRACK_LENGTH);
     const place = (frac) => {
         const pt = path.getPointAtLength(total * frac); // координаты viewBox 0..100
         const px = pt.x / 100 * boardW;

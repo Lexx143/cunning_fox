@@ -228,9 +228,9 @@ function startGame() {
     // Грибы-улики: каждый закреплён за конкретной приметой
     const clueKeys = shuffleArray(CLUE_TYPES.map(ct => ct.key));
     state.clues = [];
-    // в обучении первый гриб кладём в двух шагах от старта — до него точно хватит ходов
+    // в обучении первый гриб кладём в трёх шагах от старта — до него точно хватит ходов
     if (!Tutorial.isDone()) {
-        state.clues.push({ x: 5, y: 5, clueKey: clueKeys[0] });
+        state.clues.push({ x: 4, y: 6, clueKey: clueKeys[0] });
     }
     while (state.clues.length < NUM_CLUES) {
         const rx = Math.floor(Math.random() * GRID_SIZE);
