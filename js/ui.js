@@ -352,21 +352,50 @@ function positionPawns() {
     positionFoxToken(cell);
 }
 
-function positionFoxToken(cellSize) {
+// Лис ходит строго по кривой тропы: и стоит на ней, и перемещается вдоль неё
+function positionFoxToken(cellSize, animateFromIdx = null) {
     const fox = $('fox-token');
     if (!fox) return;
-    const cell = cellSize || $('board-grid').clientWidth / GRID_SIZE;
+    const boardW = $('board-grid').clientWidth;
+    const cell = cellSize || boardW / GRID_SIZE;
     const size = cell * 1.6;
-    const pos = FOX_PATH[Math.min(state.fox, FOX_PATH.length - 1)];
     fox.style.width = size + 'px';
     fox.style.height = size + 'px';
-    const cx = pos.x * cell + cell / 2 - size / 2;
-    const cy = pos.y * cell + cell * 0.75 - size;
-    fox.style.transform = `translate(${cx}px, ${cy}px)`;
-    fox.style.zIndex = 9 + pos.y;
     fox.classList.toggle('in-burrow', state.fox >= FOX_TRACK_LENGTH);
 
-    updateTrailProgress();
+    const path = $('trail-passed');
+    if (!path || !TRAIL_LENGTHS) return;
+    const total = path.getTotalLength();
+    const fracOf = idx => TRAIL_LENGTHS[Math.min(idx, TRAIL_LENGTHS.length - 1)] / TRAIL_LENGTHS[TRAIL_LENGTHS.length - 1];
+    const place = (frac) => {
+        const pt = path.getPointAtLength(total * frac); // координаты viewBox 0..100
+        const px = pt.x / 100 * boardW;
+        const py = pt.y / 100 * boardW;
+        fox.style.transform = `translate(${px - size / 2}px, ${py + cell * 0.25 - size}px)`;
+        fox.style.zIndex = 9 + Math.round(py / cell);
+    };
+
+    if (animateFromIdx === null || animateFromIdx === state.fox) {
+        place(fracOf(state.fox));
+        updateTrailProgress();
+        return;
+    }
+
+    // бег вдоль тропы: JS-анимация по длине кривой, тропа темнеет следом
+    const f0 = fracOf(animateFromIdx);
+    const f1 = fracOf(state.fox);
+    fox.classList.add('trail-anim');
+    const dur = 550 + 320 * Math.abs(state.fox - animateFromIdx); // дольше — если бежит дальше
+    const t0 = performance.now();
+    (function tick(now) {
+        const t = Math.min(1, ((now || performance.now()) - t0) / dur);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const f = f0 + (f1 - f0) * e;
+        place(f);
+        path.setAttribute('stroke-dasharray', `${total * f} ${total}`);
+        if (t < 1) requestAnimationFrame(tick);
+        else { fox.classList.remove('trail-anim'); updateTrailProgress(); }
+    })();
 }
 
 // ---------- Экраны «Поле» / «Подозреваемые» ----------

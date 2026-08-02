@@ -735,9 +735,10 @@ function resolveAccuse(i) {
 // ================= Лис и конец игры =================
 
 function moveFox(n) {
+    const from = state.fox;
     state.fox = Math.min(FOX_TRACK_LENGTH, state.fox + n);
     Sound.play('foxRun');
-    positionFoxToken();
+    positionFoxToken(null, from);
     updateDangerBadge();
     if (state.fox >= FOX_TRACK_LENGTH) endGame(false);
     else saveGame();

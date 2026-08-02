@@ -17,7 +17,7 @@ const Tutorial = (() => {
         { text: 'tour4', target: () => document.querySelector('.cell-art.art-clue') },
         { text: 'tour5', target: '#clue-chips' },
         { text: 'tour6', target: '#suspects-grid', screen: 'suspects' },
-        { text: 'tour7', target: '#roll-open-btn', screen: 'board' },
+        { text: 'tour7', target: '#action-row', screen: 'board' },
     ];
 
     // Интерактив: text — ключ i18n; target — селектор или функция → элемент;
@@ -26,17 +26,15 @@ const Tutorial = (() => {
     const SCRIPT = [
         { text: 'tut2',           target: '#suspects-grid',    advance: 'event:revealed2', screen: 'suspects' },
         { text: 'tut3',           target: '#roll-open-btn',    advance: 'event:diceOpened', screen: 'board' },
-        { text: 'tut_eyes',       target: '#target-picker',    advance: 'next', bubblePos: 'top' },
-        { text: 'tut_roll',       target: '#roll-btn',         advance: 'event:rollResolved', bubblePos: 'top' },
+        { text: 'tut_eyes',       target: '#roll-btn',         advance: 'event:rollResolved', bubblePos: 'top' },
         { text: 'tut_open_more',  target: '#suspects-grid',    advance: 'event:revealed2' },
         { text: 'tut_roll_again', target: '#roll-open-btn',    advance: 'event:diceOpened' },
-        { text: 'tut_paws',       target: '#target-picker',    advance: 'next', bubblePos: 'top' },
-        { text: 'tut_roll',       target: '#roll-btn',         advance: 'event:rollResolved', bubblePos: 'top' },
-        { text: 'tut6',           target: '#fox-danger',       advance: 'next' },
+        { text: 'tut_paws',       target: '#roll-btn',         advance: 'event:rollResolved', bubblePos: 'top' },
         { text: 'tut7',           target: '#board-wrap',       advance: 'event:reachedClue' },
         { text: 'tut8',           target: '#check-clue-btn',   advance: 'event:cluePicked' },
         { text: 'tut_lens',       target: '#decoder-close-btn', advance: 'event:decoderClosed', bubblePos: 'top' },
         { text: 'tut9',           target: '#clue-chips',       advance: 'next' },
+        { text: 'tut6',           target: '#fox-danger',       advance: 'next' },
         { text: 'tut10',          target: '#suspects-grid',    advance: 'next', screen: 'suspects' },
         { text: 'tut11',          target: '#suspects-grid',    advance: 'next' },
         { text: 'tut12',          target: null,                advance: 'finish' },
@@ -241,7 +239,11 @@ const Tutorial = (() => {
         for (let k = stepIdx; k < Math.min(stepIdx + 2, SCRIPT.length); k++) {
             if (SCRIPT[k].advance === 'event:' + event) {
                 stepIdx = k;
-                setTimeout(next, 700);
+                // пузырь прячем сразу — он не должен ни мгновения висеть
+                // на старом месте поверх нового интерфейса (модалка кубиков и т.п.)
+                bubble.classList.add('switching');
+                const delay = event === 'diceOpened' ? 120 : 550;
+                setTimeout(next, delay);
                 break;
             }
         }
