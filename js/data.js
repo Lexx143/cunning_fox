@@ -59,7 +59,7 @@ const SUSPECTS = [
     { name: { ru: 'Беатрис',   en: 'Beatrice' },  hat: false, glasses: false, scarf: false, umbrella: true,  monocle: true,  watch: false },
     { name: { ru: 'Чарльз',    en: 'Charles' },   hat: true,  glasses: true,  scarf: false, umbrella: false, monocle: false, watch: true  },
     { name: { ru: 'Дейзи',     en: 'Daisy' },     hat: false, glasses: false, scarf: true,  umbrella: true,  monocle: false, watch: false },
-    { name: { ru: 'Эдит',      en: 'Edith' },     hat: false, glasses: true,  scarf: false, umbrella: false, monocle: true,  watch: false },
+    { name: { ru: 'Эдит',      en: 'Edith' },     hat: false, glasses: true,  scarf: false, umbrella: true,  monocle: false, watch: false },
     { name: { ru: 'Фрэнк',     en: 'Frank' },     hat: true,  glasses: false, scarf: false, umbrella: false, monocle: false, watch: true  },
     { name: { ru: 'Гертруда',  en: 'Gertrude' },  hat: false, glasses: false, scarf: true,  umbrella: false, monocle: true,  watch: false },
     { name: { ru: 'Гарольд',   en: 'Harold' },    hat: false, glasses: false, scarf: false, umbrella: true,  monocle: false, watch: true  },
