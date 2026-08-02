@@ -333,7 +333,7 @@ img { -webkit-user-drag: none; }
     overflow: hidden;
     /* верхний слой — арт поляны (если сгенерирован), нижний — травяная текстура */
     background:
-        url('../assets/board-bg.webp') center / cover no-repeat,
+        url('../assets/board-bg.webp?v=2') center / cover no-repeat,
         #dbe6ab url('../assets/tex-grass.webp') center / 560px repeat;
 }
 .board-cell {

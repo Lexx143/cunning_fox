@@ -859,7 +859,8 @@ function preloadAssets(onDone) {
      'icon-dice', 'icon-magnifier', 'clue-mushroom',
      'decor-bush', 'decor-flower-pink', 'decor-flower-white', 'decor-grass', 'decor-stone']
         .forEach(n => files.push(ASSET_DIR + n + '.webp'));
-    ['tex-grass', 'tex-path', 'tex-page-bg', 'tile-mystery', 'board-bg'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
+    ['tex-grass', 'tex-page-bg', 'tile-mystery'].forEach(n => files.push(ASSET_RAW + n + '.webp'));
+    files.push(ASSET_RAW + 'board-bg.webp?v=2'); // версия синхронно с css/styles.css
 
     let loaded = 0;
     let finished = false;
