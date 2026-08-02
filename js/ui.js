@@ -193,9 +193,9 @@ function buildTrailSVG() {
                 <image href="${ASSET_RAW}tex-path.webp" x="0" y="0" width="14" height="14"/>
             </pattern>
         </defs>
-        <path d="${d}" fill="none" stroke="#8a6a45" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
-        <path d="${d}" fill="none" stroke="url(#trail-tex)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path id="trail-passed" d="${d}" fill="none" stroke="rgba(80,55,30,0.3)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${d}" fill="none" stroke="#8a6a45" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+        <path d="${d}" fill="none" stroke="url(#trail-tex)" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        <path id="trail-passed" d="${d}" fill="none" stroke="rgba(80,55,30,0.3)" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>
     `;
     const wrap = $('board-wrap');
     wrap.insertBefore(svg, $('pawn-layer'));
@@ -275,7 +275,10 @@ function buildPawns() {
     fox.id = 'fox-token';
     fox.innerHTML = `<img src="${ASSET_DIR}fox-thief.webp" alt="">`;
     layer.appendChild(fox);
+    // первичная расстановка — мгновенно, без анимации «разлёта из угла»
+    layer.classList.add('no-anim');
     positionPawns();
+    requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.remove('no-anim')));
 }
 
 function positionPawns() {

@@ -97,6 +97,9 @@ function restoreGame(data) {
             ? t('status_turn_multi', { name: pl.name })
             : t('status_turn_solo'));
     }
+
+    // обучение не было завершено (например, страницу перезагрузили) — начнём заново
+    if (!Tutorial.isDone()) Tutorial.start();
 }
 
 // ================= Новая игра =================
@@ -178,8 +181,13 @@ function renderPlayerSetupRows(count) {
 function refreshSetupPickers(count) {
     const rows = $('player-names').querySelectorAll('.player-setup-row');
     rows.forEach((row, i) => {
+        const color = PLAYER_COLORS[setupColors[i]].value;
         row.querySelectorAll('.animal-btn').forEach((btn, ai) => {
-            btn.classList.toggle('selected', setupAnimals[i] === ai);
+            const sel = setupAnimals[i] === ai;
+            btn.classList.toggle('selected', sel);
+            // выбранный зверёк окрашивается в цвет фишки игрока
+            btn.style.borderColor = sel ? color : '';
+            btn.style.background = sel ? `linear-gradient(${color}29, ${color}29), #fffdf7` : '';
         });
         row.querySelectorAll('.color-btn').forEach((btn, ci) => {
             btn.classList.toggle('selected', setupColors[i] === ci);
@@ -399,6 +407,8 @@ function selectTarget(tg) {
 
 function rollDice() {
     if (state.phase !== 'rolling' || state.rollsLeft <= 0 || state.rollingAnim) return;
+    // защита от нетерпеливого двойного тапа: пауза после предыдущего броска
+    if (Date.now() - (state.lastRollDoneAt || 0) < 600) return;
 
     if (state.target === null) {
         // в обучении цель хода задана сценарием: сначала «глаза», потом «следы»
@@ -437,6 +447,7 @@ function rollDice() {
         Sound.play('diceThrow');
         updateDiceUI();
         state.rollingAnim = false;
+        state.lastRollDoneAt = Date.now();
         resolveRoll();
     }, 480);
 }
@@ -514,11 +525,37 @@ function playerOnClue() {
     return p && state.clues.some(c => c.x === p.pos.x && c.y === p.pos.y);
 }
 
+// Тап по «декоративному» месту: пусть нарисованное отзывается — подпрыгивает
+function pokeCell(x, y) {
+    let target = null;
+    const foxPos = FOX_PATH[Math.min(state.fox, FOX_PATH.length - 1)];
+    if (foxPos.x === x && foxPos.y === y) target = $('fox-token')?.querySelector('img');
+    if (!target) {
+        const pi = state.players.findIndex(p => p.pos.x === x && p.pos.y === y);
+        if (pi !== -1) target = $('pawn-' + pi)?.querySelector('img');
+    }
+    if (!target) target = cellAt(x, y)?.querySelector('.cell-art img');
+    if (!target) return;
+    target.classList.remove('poke');
+    void target.offsetWidth;
+    target.classList.add('poke');
+    Sound.play('click');
+}
+
 function onCellClick(x, y) {
-    if (state.phase !== 'moving' || state.steps <= 0) return;
+    if (state.phase !== 'moving' || state.steps <= 0) { pokeCell(x, y); return; }
     const p = activePlayer();
     const dist = Math.max(Math.abs(x - p.pos.x), Math.abs(y - p.pos.y));
-    if (dist === 0 || dist > state.steps) return;
+    if (dist === 0) { pokeCell(x, y); return; }
+    if (dist > state.steps) {
+        // клетка вне зоны ходьбы: покачаем её, чтобы было видно «сюда нельзя»
+        const cell = cellAt(x, y);
+        cell.classList.remove('shake-no');
+        void cell.offsetWidth;
+        cell.classList.add('shake-no');
+        setStatus(t('status_too_far', { n: state.steps }));
+        return;
+    }
 
     p.pos = { x, y };
     state.steps -= dist;
@@ -928,7 +965,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    $('start-game-btn').addEventListener('click', startGame);
+    $('start-game-btn').addEventListener('click', () => {
+        // посреди партии — предупреждаем, что прогресс пропадёт
+        if (state.players.length > 0 && state.phase !== 'gameover') {
+            Sound.play('click');
+            $('confirm-title').textContent = t('confirm_new_title');
+            $('confirm-text').textContent = t('confirm_new_text');
+            $('confirm-yes-btn').onclick = () => startGame();
+            $('confirm-no-btn').onclick = () => openSetupModal(true);
+            openModal('modal-confirm');
+            return;
+        }
+        startGame();
+    });
     $('setup-cancel-btn').addEventListener('click', () => { Sound.play('click'); closeModal(); });
     $('new-game-btn').addEventListener('click', () => openSetupModal(state.players.length > 0));
     $('endgame-new-btn').addEventListener('click', () => openSetupModal(false));
