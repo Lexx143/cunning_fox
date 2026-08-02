@@ -31,7 +31,7 @@ const Tutorial = (() => {
         { text: 'tut_roll_again', target: '#roll-open-btn',    advance: 'event:diceOpened' },
         { text: 'tut_paws',       target: '#roll-btn',         advance: 'event:rollResolved', bubblePos: 'top' },
         { text: 'tut7',           target: '#board-wrap',       advance: 'event:reachedClue' },
-        { text: 'tut8',           target: '#check-clue-btn',   advance: 'event:cluePicked' },
+        { text: 'tut8',           target: '#clue-pick-btn',    advance: 'event:cluePicked', bubblePos: 'top' },
         { text: 'tut_lens',       target: '#decoder-close-btn', advance: 'event:decoderClosed', bubblePos: 'top' },
         { text: 'tut9',           target: '#clue-chips',       advance: 'next' },
         { text: 'tut6',           target: '#fox-danger',       advance: 'next' },

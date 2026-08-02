@@ -60,6 +60,10 @@ const I18N = {
         btn_reroll: 'Перебросить',
         btn_roll_open: 'Бросить кубики',
 
+        // Найден грибок
+        clue_found_title: 'Грибок с уликой!',
+        clue_found_text: 'Под грибком спрятана улика.',
+
         // Дешифратор
         decoder_title: 'Дешифратор улик',
         decoder_sub: 'Под грибком спрятана улика…',
@@ -207,6 +211,9 @@ const I18N = {
         btn_roll: 'Roll!',
         btn_reroll: 'Re-roll',
         btn_roll_open: 'Roll the dice',
+
+        clue_found_title: 'A Clue Mushroom!',
+        clue_found_text: 'A clue is hidden under it.',
 
         decoder_title: 'Clue Decoder',
         decoder_sub: 'A clue is hidden under the mushroom…',

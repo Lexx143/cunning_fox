@@ -70,6 +70,7 @@ function applyStaticTexts() {
     });
     $('roll-open-btn').innerHTML = diceIconImg(20) + ' ' + t('btn_roll_open');
     $('check-clue-btn').innerHTML = mushroomImg(20) + ' ' + t('btn_check_clue');
+    $('clue-pick-btn').innerHTML = mushroomImg(20) + ' ' + t('btn_check_clue');
     document.querySelector('.target-btn[data-target="eyes"] .target-name').textContent = t('target_eyes');
     document.querySelector('.target-btn[data-target="eyes"] small').textContent = t('target_eyes_sub');
     document.querySelector('.target-btn[data-target="clues"] .target-name').textContent = t('target_paws');

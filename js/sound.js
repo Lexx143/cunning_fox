@@ -30,7 +30,7 @@ const Sound = (() => {
     let musicAvailable = false;
 
     // предзагрузка через HTMLAudio-пул (просто и достаточно для коротких эффектов)
-    const SND_V = '2'; // версия аудио — сбрасывает кэш браузера при замене файлов
+    const SND_V = '3'; // версия аудио — сбрасывает кэш браузера при замене файлов
 
     function preload() {
         for (const [name, [file]] of Object.entries(SFX_FILES)) {

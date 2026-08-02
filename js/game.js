@@ -570,6 +570,9 @@ function onCellClick(x, y) {
     if (onClue) {
         Sound.play('clue');
         setStatus(state.steps > 0 ? t('status_clue_found_move') : t('status_clue_found_end'), 'good');
+        // окошко «сорвать» — чтобы не тянуться к кнопке в углу экрана;
+        // закрыть можно тапом мимо, кнопка в панели действий остаётся
+        openModal('modal-clue-found');
         Tutorial.notify('reachedClue');
     } else if (state.steps === 0) {
         setStatus(t('status_no_steps'));
@@ -943,6 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('fox-danger-icon').innerHTML = foxThiefImg(30);
     $('dice-modal-icon').innerHTML = diceIconImg(26);
     $('decoder-modal-icon').innerHTML = magnifierImg(28);
+    $('clue-modal-icon').innerHTML = mushroomImg(28);
     $('setup-modal-icon').innerHTML = pieImg(32);
     $('target-eye-icon').innerHTML = eyeIcon(30);
     $('target-paw-icon').innerHTML = pawIcon(26);
@@ -999,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Панель действий
     $('check-clue-btn').addEventListener('click', pickMushroom);
+    $('clue-pick-btn').addEventListener('click', () => { closeModal(); pickMushroom(); });
     $('end-turn-btn').addEventListener('click', endTurnManually);
     $('decoder-close-btn').addEventListener('click', closeDecoderModal);
 
